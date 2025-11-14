@@ -1,0 +1,19 @@
+{
+  "name": "@grc/database",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Database layer with Prisma ORM",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "devDependencies": {
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0",
+    "typescript": "^5.3.3"
+  }
+}

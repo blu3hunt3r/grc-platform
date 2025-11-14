@@ -1,0 +1,168 @@
+// Database schema for GRC Platform
+// Architecture Reference: Section 8 - Data Architecture
+// PostgreSQL (Neon) + Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// CORE ENTITIES
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  clerkId   String   @unique // Clerk user ID
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  role      UserRole @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  companies Company[]
+
+  @@map("users")
+}
+
+model Company {
+  id          String   @id @default(uuid())
+  name        String
+  domain      String?
+  description String?
+  size        CompanySize?
+  industry    String?
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  // Relations
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  audits Audit[]
+
+  @@map("companies")
+}
+
+model Audit {
+  id          String      @id @default(uuid())
+  companyId   String
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Audit details
+  framework   Framework   @default(SOC2_TYPE2)
+  status      AuditStatus @default(NOT_STARTED)
+  scope       String?     // JSON string for now
+
+  // Timeline
+  startDate   DateTime?
+  targetDate  DateTime?
+  completedAt DateTime?
+
+  // Progress
+  progressPercentage Int @default(0)
+
+  // Metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  evidenceItems Evidence[]
+
+  @@map("audits")
+}
+
+model Evidence {
+  id          String   @id @default(uuid())
+  auditId     String
+  audit       Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  // Evidence details
+  controlId   String   // e.g., "CC6.1"
+  controlName String   // e.g., "MFA Enforcement"
+
+  type        EvidenceType
+  status      EvidenceStatus @default(PENDING)
+
+  // Content
+  description String?
+  fileUrl     String?  // S3/R2 URL
+  screenshotUrl String? // Screenshot evidence
+  apiResponse String?  // JSON response from API
+
+  // Analysis (from AI)
+  aiAnalysis  String?  // Claude Vision analysis
+  validated   Boolean  @default(false)
+
+  // Metadata
+  collectedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("evidence")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  USER
+  ADMIN
+  AUDITOR
+}
+
+enum CompanySize {
+  STARTUP       // 1-50
+  SMALL         // 51-200
+  MEDIUM        // 201-1000
+  LARGE         // 1001+
+}
+
+enum Framework {
+  SOC2_TYPE1
+  SOC2_TYPE2
+  ISO27001
+  HIPAA
+  PCI_DSS
+}
+
+enum AuditStatus {
+  NOT_STARTED
+  DISCOVERY
+  GAP_ASSESSMENT
+  IMPLEMENTATION
+  EVIDENCE_COLLECTION
+  AUDIT_PREP
+  IN_AUDIT
+  COMPLETED
+  FAILED
+}
+
+enum EvidenceType {
+  SCREENSHOT
+  DOCUMENT
+  API_RESPONSE
+  LOG_FILE
+  CONFIGURATION
+  MANUAL_UPLOAD
+}
+
+enum EvidenceStatus {
+  PENDING
+  COLLECTED
+  VALIDATED
+  REJECTED
+  EXPIRED
+}

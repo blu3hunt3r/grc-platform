@@ -1,0 +1,33 @@
+{
+  "name": "grc-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-Powered GRC Automation Platform",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start": "turbo start",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:generate": "pnpm --filter @grc/database db:generate",
+    "db:push": "pnpm --filter @grc/database db:push",
+    "db:migrate": "pnpm --filter @grc/database db:migrate",
+    "db:studio": "pnpm --filter @grc/database db:studio",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "prettier": "^3.1.0",
+    "turbo": "^2.3.3",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.22.0"
+}
