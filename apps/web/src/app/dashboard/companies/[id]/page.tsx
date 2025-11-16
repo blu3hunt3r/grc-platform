@@ -55,9 +55,6 @@ async function getCompany(companyId: string) {
       },
       include: {
         audits: {
-          where: {
-            deletedAt: null,
-          },
           orderBy: {
             createdAt: "desc",
           },
@@ -89,9 +86,10 @@ async function getCompany(companyId: string) {
 export default async function CompanyDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const company = await getCompany(params.id);
+  const { id } = await params;
+  const company = await getCompany(id);
 
   if (!company) {
     notFound();
