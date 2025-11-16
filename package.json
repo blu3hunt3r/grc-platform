@@ -5,7 +5,7 @@
   "description": "AI-Powered GRC Automation Platform",
   "scripts": {
     "dev": "turbo dev",
-    "build": "turbo build",
+    "build": "pnpm db:generate && turbo build",
     "start": "turbo start",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
