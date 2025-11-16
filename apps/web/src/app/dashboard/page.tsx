@@ -28,7 +28,7 @@ export default async function DashboardPage() {
           Welcome back, {user?.firstName || "there"}!
         </h1>
         <p className="text-muted-foreground mt-2">
-          Here's an overview of your compliance automation platform
+          Here&apos;s an overview of your compliance automation platform
         </p>
       </div>
 
