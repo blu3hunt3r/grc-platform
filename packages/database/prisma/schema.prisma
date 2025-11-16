@@ -61,9 +61,10 @@ model Audit {
   company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   // Audit details
-  framework   Framework   @default(SOC2_TYPE2)
-  status      AuditStatus @default(NOT_STARTED)
-  scope       String?     // JSON string for now
+  framework      Framework   @default(SOC2_TYPE2)
+  trustCriteria  String?     // JSON array: ["Security", "Availability", "Confidentiality"]
+  status         AuditStatus @default(NOT_STARTED)
+  scope          String?     // JSON string for system boundaries
 
   // Timeline
   startDate   DateTime?
