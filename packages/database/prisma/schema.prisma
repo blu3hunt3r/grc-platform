@@ -80,6 +80,8 @@ model Audit {
 
   // Relations
   evidenceItems Evidence[]
+  agentExecutions AgentExecution[]
+  findings Finding[]
 
   @@map("audits")
 }
@@ -90,7 +92,8 @@ model Evidence {
   audit       Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
 
   // Evidence details
-  controlId   String   // e.g., "CC6.1"
+  controlId   String?  // e.g., "CC6.1" (optional for now during migration)
+  control     Control? @relation(fields: [controlId], references: [id])
   controlName String   // e.g., "MFA Enforcement"
 
   type        EvidenceType
@@ -112,6 +115,207 @@ model Evidence {
   updatedAt   DateTime @updatedAt
 
   @@map("evidence")
+}
+
+// ============================================================================
+// AGENT ARCHITECTURE
+// ============================================================================
+
+model AgentExecution {
+  id          String   @id @default(uuid())
+  auditId     String?
+  audit       Audit?   @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  // Agent details
+  agentType   AgentType
+  agentName   String   // e.g., "Discovery Agent", "Access Control Agent"
+  phase       AuditStatus // Which phase of audit this belongs to
+
+  // Execution details
+  status      ExecutionStatus @default(RUNNING)
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+  duration    Int?     // milliseconds
+
+  // Context
+  input       String?  // JSON input parameters
+  output      String?  // JSON output/results
+  error       String?  // Error message if failed
+
+  // Relationships
+  decisions   AgentDecision[]
+  approvals   Approval[]
+  tasks       Task[]
+  findings    Finding[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("agent_executions")
+  @@index([auditId, agentType])
+  @@index([status, startedAt])
+}
+
+model AgentDecision {
+  id            String   @id @default(uuid())
+  executionId   String
+  execution     AgentExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  // Decision details
+  decisionType  String   // e.g., "SCOPE_DETERMINATION", "GAP_IDENTIFIED", "EVIDENCE_SUFFICIENT"
+  description   String
+  reasoning     String   // AI reasoning chain (CoT)
+  confidence    Float    // 0.0 to 1.0
+
+  // Supporting data
+  evidence      String?  // JSON supporting evidence
+  alternatives  String?  // JSON alternative options considered
+
+  // Human override
+  overridden    Boolean  @default(false)
+  overrideBy    String?
+  overrideReason String?
+
+  createdAt     DateTime @default(now())
+
+  @@map("agent_decisions")
+  @@index([executionId])
+}
+
+model Approval {
+  id            String   @id @default(uuid())
+  executionId   String
+  execution     AgentExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  // Approval request
+  title         String
+  description   String
+  type          ApprovalType
+  priority      Priority @default(MEDIUM)
+
+  // Status
+  status        ApprovalStatus @default(PENDING)
+  requestedAt   DateTime @default(now())
+  respondedAt   DateTime?
+
+  // Response
+  approvedBy    String?  // User ID
+  decision      Boolean? // true = approved, false = rejected
+  comments      String?
+
+  // Context
+  metadata      String?  // JSON additional context
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("approvals")
+  @@index([status, priority])
+  @@index([requestedAt])
+}
+
+model Control {
+  id            String   @id @default(uuid())
+
+  // Control identification
+  framework     Framework
+  controlId     String   // e.g., "CC6.1", "A.9.2.1"
+  controlName   String
+  category      String   // e.g., "Access Control", "Network Security"
+
+  // Description
+  description   String
+  requirements  String   // What needs to be proven
+  testProcedure String   // How to test/verify
+
+  // Evidence requirements
+  evidenceTypes String[] // Array of required evidence types
+  frequency     CollectionFrequency
+
+  // Relationships
+  findings      Finding[]
+  evidence      Evidence[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("controls")
+  @@unique([framework, controlId])
+  @@index([framework])
+}
+
+model Finding {
+  id            String   @id @default(uuid())
+  auditId       String
+  audit         Audit    @relation(fields: [auditId], references: [id], onDelete: Cascade)
+
+  controlId     String?
+  control       Control? @relation(fields: [controlId], references: [id])
+
+  executionId   String?
+  execution     AgentExecution? @relation(fields: [executionId], references: [id])
+
+  // Finding details
+  severity      Severity
+  status        FindingStatus @default(OPEN)
+  title         String
+  description   String
+
+  // Gap analysis
+  currentState  String   // What exists today
+  requiredState String   // What's needed for compliance
+  impact        String   // Business impact description
+
+  // Remediation
+  recommendation String
+  tasks         Task[]
+
+  // Timeline
+  identifiedAt  DateTime @default(now())
+  dueDate       DateTime?
+  resolvedAt    DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("findings")
+  @@index([auditId, severity, status])
+}
+
+model Task {
+  id            String   @id @default(uuid())
+
+  findingId     String?
+  finding       Finding? @relation(fields: [findingId], references: [id], onDelete: SetNull)
+
+  executionId   String?
+  execution     AgentExecution? @relation(fields: [executionId], references: [id], onDelete: SetNull)
+
+  // Task details
+  title         String
+  description   String
+  type          TaskType
+  priority      Priority @default(MEDIUM)
+  status        TaskStatus @default(TODO)
+
+  // Assignment
+  assignedTo    String?  // User ID
+  assignedBy    String   // Agent or User ID
+  assignedAt    DateTime?
+
+  // Timeline
+  dueDate       DateTime?
+  completedAt   DateTime?
+
+  // Metadata
+  metadata      String?  // JSON additional context
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("tasks")
+  @@index([status, priority])
+  @@index([assignedTo])
 }
 
 // ============================================================================
@@ -166,4 +370,98 @@ enum EvidenceStatus {
   VALIDATED
   REJECTED
   EXPIRED
+}
+
+enum AgentType {
+  ORCHESTRATOR
+  DISCOVERY
+  FRAMEWORK_EXPERT
+  ACCESS_CONTROL
+  INFRASTRUCTURE_SECURITY
+  CHANGE_MANAGEMENT
+  VENDOR_RISK
+  HR_COMPLIANCE
+  POLICY_GENERATION
+  CODE_SCANNER
+  INFRASTRUCTURE_SCANNER
+  COMPLIANCE_COPILOT
+  QUESTIONNAIRE_AUTOMATION
+  EVIDENCE_MANAGEMENT
+  AUDIT_COORDINATOR
+  INCIDENT_RESPONSE
+}
+
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+  AWAITING_APPROVAL
+}
+
+enum ApprovalType {
+  SCOPE_APPROVAL          // Approve system boundary
+  GAP_REMEDIATION         // Approve remediation plan
+  POLICY_APPROVAL         // Approve generated policy
+  VENDOR_APPROVAL         // Approve vendor risk assessment
+  EVIDENCE_APPROVAL       // Approve collected evidence
+  CONTROL_IMPLEMENTATION  // Approve control implementation
+  AUDIT_READINESS         // Approve readiness to proceed
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CollectionFrequency {
+  ONCE           // One-time collection
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  CONTINUOUS     // Real-time monitoring
+}
+
+enum Severity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FindingStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  ACCEPTED_RISK
+  FALSE_POSITIVE
+}
+
+enum TaskType {
+  REMEDIATION        // Fix a gap
+  POLICY_CREATION    // Write a policy
+  CONFIGURATION      // Configure a system
+  DOCUMENTATION      // Document a process
+  VENDOR_ASSESSMENT  // Assess a vendor
+  EVIDENCE_COLLECTION // Collect evidence
+  REVIEW             // Human review needed
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  CANCELLED
 }

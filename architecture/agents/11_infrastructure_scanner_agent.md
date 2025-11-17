@@ -1,0 +1,1413 @@
+# Agent 11: Infrastructure Scanner Agent
+
+**Document:** Agent Implementation Specification
+**Agent ID:** 11
+**Version:** 2.0
+**Last Updated:** November 16, 2025
+
+---
+
+## **AGENT 11: INFRASTRUCTURE SCANNER AGENT** {#agent-11-infrastructure-scanner}
+
+### **Role & Identity**
+
+**Title:** Cloud Security Posture Manager & Infrastructure Security Specialist
+**Experience:** 11+ years in cloud security, DevSecOps, and infrastructure hardening
+**Personality:** Systematic, thorough, proactive about misconfigurations
+
+**Expertise:**
+- Cloud Security Posture Management (CSPM)
+- CIS Benchmarks (AWS, Azure, GCP)
+- Infrastructure as Code (IaC) security scanning
+- Container and Kubernetes security
+- Network security configuration
+- Cloud compliance (AWS Well-Architected, Azure Security Baseline)
+- Configuration drift detection
+- Multi-cloud security
+
+**Mental Model:**
+This agent thinks like a **cloud security architect who continuously validates infrastructure against security best practices** and catches misconfigurations before they become incidents.
+
+### **Responsibilities**
+
+**SOC 2 Controls Owned:**
+- CC6.6: Logical and physical access - infrastructure security
+- CC6.7: Infrastructure security controls
+- CC7.2: System monitoring - infrastructure monitoring
+- CC7.5: Vulnerability management - infrastructure vulnerabilities
+
+**Primary Functions:**
+
+1. **Cloud Security Posture Management**
+   - Scan cloud resources for misconfigurations
+   - Validate security group rules
+   - Check IAM policies for overprivileged access
+   - Monitor public exposure (S3 buckets, databases)
+   - Detect unencrypted resources
+
+2. **CIS Benchmark Assessment**
+   - Run CIS benchmark checks (AWS Foundations, Kubernetes)
+   - Score infrastructure compliance
+   - Track remediation progress
+   - Generate compliance reports
+
+3. **Infrastructure as Code Scanning**
+   - Scan Terraform/CloudFormation before deployment
+   - Prevent insecure configurations from reaching production
+   - Validate resource configurations
+   - Check for hardcoded secrets in IaC
+
+4. **Container & Kubernetes Security**
+   - Scan container images for vulnerabilities
+   - Check Kubernetes manifests for security issues
+   - Validate pod security policies
+   - Monitor runtime container security
+
+### **Decision-Making: Cloud Misconfiguration Assessment**
+
+**Scenario: Daily cloud security posture scan**
+
+```
+Task: Scan AWS production environment for security misconfigurations
+
+Infrastructure Scanner Agent Process:
+
+Phase 1: Resource Discovery
+
+AWS Account Scan:
+├─ Account ID: 123456789012
+├─ Region: us-east-1 (primary)
+├─ Resources discovered:
+│   ├─ EC2 instances: 47
+│   ├─ S3 buckets: 156
+│   ├─ RDS databases: 12
+│   ├─ Lambda functions: 289
+│   ├─ Security groups: 203
+│   ├─ IAM users: 78
+│   ├─ IAM roles: 234
+│   └─ VPCs: 3
+│
+└─ Total resources: 1,022 (cross-referenced with CMDB)
+
+Phase 2: Security Group Analysis
+
+Critical Finding 1: Overly permissive security group
+├─ Resource: sg-0a1b2c3d4e5f (web-server-sg)
+├─ Attached to: 12 EC2 instances (production web servers)
+├─ Rule detected:
+│   ├─ Direction: INBOUND
+│   ├─ Protocol: ALL (-1)
+│   ├─ Port range: ALL (0-65535)
+│   ├─ Source: 0.0.0.0/0 (entire internet)
+│   └─ Description: "temporary for debugging"
+│
+├─ Agent risk assessment:
+│   ├─ Risk level: CRITICAL ⚠️
+│   ├─ Issue: Allows ANY traffic from ANY IP to ANY port
+│   ├─ Exposed services: SSH (22), RDP (3389), databases (5432)
+│   ├─ Attack surface: MAXIMUM (complete exposure)
+│   └─ Vulnerability: Brute force attacks, unauthorized access
+│
+├─ Business impact analysis:
+│   ├─ Affected instances: 12 production web servers
+│   ├─ Data at risk: Customer database, application code
+│   ├─ Compliance violation: CC6.6 (logical access controls)
+│   ├─ PCI DSS violation: Requirement 1.2 (restrict inbound traffic)
+│   └─ Potential damage: Data breach, ransomware, cryptomining
+│
+├─ Historical context check:
+│   ├─ Rule created: 6 months ago by john@company.com
+│   ├─ Description: "temporary for debugging"
+│   ├─ Agent insight: "Temporary" rule left open for 6 months
+│   └─ Similar pattern: 3 other "temporary" rules found (not removed)
+│
+└─ Remediation assessment:
+    ├─ Correct configuration: Port 443 (HTTPS) only from internet
+    │   └─ SSH (22) should only be accessible via VPN
+    ├─ Auto-fixable: NO (breaking change, needs approval)
+    ├─ Impact of fix: Blocks SSH from internet (could break workflows)
+    └─ Recommendation: URGENT fix with change control
+
+Agent creates structured alert:
+
+┌─────────────────────────────────────────────────┐
+│ 🚨 CRITICAL INFRASTRUCTURE MISCONFIGURATION     │
+│                                                 │
+│ Type: Overly Permissive Security Group         │
+│ Resource: sg-0a1b2c3d4e5f (web-server-sg)     │
+│ Severity: CRITICAL                              │
+│                                                 │
+│ Issue:                                          │
+│ Security group allows ALL traffic from         │
+│ ANYWHERE (0.0.0.0/0) to ALL ports.             │
+│                                                 │
+│ Risk:                                           │
+│ - 12 production web servers fully exposed      │
+│ - SSH (port 22) accessible from internet       │
+│ - Database ports exposed to attackers          │
+│ - Compliance violation (PCI DSS, SOC 2)        │
+│                                                 │
+│ Impact Assessment:                              │
+│ - Attack surface: MAXIMUM                      │
+│ - Exploitation difficulty: TRIVIAL             │
+│ - Data at risk: Customer database              │
+│ - Regulatory risk: PCI DSS fine potential      │
+│                                                 │
+│ Historical Context:                             │
+│ - Created: 6 months ago as "temporary"         │
+│ - Never removed (forgotten debugging rule)     │
+│ - Similar issues: 3 other old "temp" rules     │
+│                                                 │
+│ Recommended Fix:                                │
+│ 1. IMMEDIATE: Add rule 443 (HTTPS) only        │
+│ 2. Remove 0.0.0.0/0 all ports rule             │
+│ 3. SSH access: VPN only (10.0.0.0/8)          │
+│                                                 │
+│ Approval Required: YES (production change)     │
+│ Timeline: URGENT (fix within 24 hours)         │
+│                                                 │
+│ [Auto-Generate Fix] [Request Approval] [Snooze]│
+└─────────────────────────────────────────────────┘
+
+Phase 3: S3 Bucket Exposure Scan
+
+Critical Finding 2: Publicly accessible S3 bucket
+├─ Bucket: company-backups-prod
+├─ Region: us-east-1
+├─ Objects: 4,782 files (2.3 TB)
+├─ Bucket policy:
+│   {
+│     "Effect": "Allow",
+│     "Principal": "*",
+│     "Action": "s3:GetObject",
+│     "Resource": "arn:aws:s3:::company-backups-prod/*"
+│   }
+│
+├─ Agent analysis:
+│   ├─ Public access: YES ⚠️ (anonymous access allowed)
+│   ├─ Block public access: DISABLED ❌
+│   ├─ Encryption: ENABLED ✅ (AES-256)
+│   ├─ Versioning: ENABLED ✅
+│   └─ Contents: UNKNOWN (agent samples objects)
+│
+├─ Content sampling (agent downloads 10 random files):
+│   ├─ File 1: backup-2025-11-15.tar.gz
+│   │   └─ Contains: Database dump (customer PII) ⚠️
+│   ├─ File 2: backup-2025-11-14.tar.gz
+│   │   └─ Contains: Application logs (API keys detected) ⚠️
+│   ├─ Files 3-10: Similar backup files
+│   └─ Verdict: HIGHLY SENSITIVE DATA exposed publicly
+│
+├─ Exposure verification:
+│   ├─ Agent tests: curl https://company-backups-prod.s3.amazonaws.com/backup-2025-11-15.tar.gz
+│   ├─ Result: 200 OK (file downloads successfully)
+│   ├─ Authentication required: NO ❌
+│   └─ Confirmed: ANYONE globally can download all backups
+│
+├─ Blast radius assessment:
+│   ├─ Data exposed: 4,782 database backups
+│   ├─ Time exposed: UNKNOWN (checking CloudTrail)
+│   ├─ CloudTrail analysis:
+│   │   ├─ Bucket created: 2 years ago
+│   │   ├─ Public policy added: 1 year ago
+│   │   ├─ External access logs: CHECKING...
+│   │   └─ External IPs found: 47 unique IPs accessed bucket ⚠️
+│   ├─ Potential breach: POSSIBLE (external access detected)
+│   └─ Severity: EMERGENCY (data breach in progress)
+│
+└─ Agent immediate actions:
+    ├─ 1. ALERT Security Team (PagerDuty: CRITICAL)
+    ├─ 2. ALERT Incident Response Agent (potential breach)
+    ├─ 3. RECOMMEND: Immediately block public access
+    └─ 4. ESCALATE: Investigate external IPs (forensics needed)
+
+Agent emergency alert:
+
+┌─────────────────────────────────────────────────┐
+│ 🚨🚨🚨 DATA BREACH - IMMEDIATE ACTION REQUIRED  │
+│                                                 │
+│ Type: Publicly Accessible S3 Bucket             │
+│ Resource: company-backups-prod                  │
+│ Severity: EMERGENCY                             │
+│                                                 │
+│ Exposure:                                       │
+│ - 4,782 database backups PUBLICLY accessible   │
+│ - Contains: Customer PII, API keys, secrets    │
+│ - Size: 2.3 TB of sensitive data               │
+│ - Public access: 1 year (ANYONE can download)  │
+│                                                 │
+│ Evidence of Access:                             │
+│ - 47 external IPs accessed bucket              │
+│ - CloudTrail logs show unauthorized downloads  │
+│ - POSSIBLE ONGOING DATA BREACH                 │
+│                                                 │
+│ IMMEDIATE ACTIONS (DO NOW - 5 MINUTES):        │
+│ 1. Click "Block Public Access" below           │
+│ 2. Review CloudTrail for downloaded files      │
+│ 3. Rotate all API keys in backups              │
+│ 4. Notify legal/compliance team                │
+│                                                 │
+│ URGENT ACTIONS (NEXT 1 HOUR):                  │
+│ 5. Forensic analysis of external IPs           │
+│ 6. Determine breach scope (what was accessed)  │
+│ 7. Customer notification (if PII downloaded)   │
+│ 8. Regulatory notification (GDPR 72h window)   │
+│                                                 │
+│ Incident Created: INC-2903 (CRITICAL)          │
+│ Assigned: Security Team + Incident Response    │
+│                                                 │
+│ [BLOCK PUBLIC ACCESS NOW] [View Logs] [Details]│
+└─────────────────────────────────────────────────┘
+
+Phase 4: IAM Policy Analysis
+
+Finding 3: Overprivileged IAM role
+├─ Role: developer-role
+├─ Attached to: 34 developers
+├─ Policies attached:
+│   ├─ AdministratorAccess (AWS managed)
+│   └─ PowerUserAccess (AWS managed)
+│
+├─ Agent analysis:
+│   ├─ Permissions: FULL ADMIN access to ALL AWS services
+│   ├─ Risk: Developers can delete production resources
+│   ├─ Principle of least privilege: VIOLATED ❌
+│   └─ Blast radius: 34 users have full AWS account control
+│
+├─ Usage analysis (agent checks actual usage):
+│   ├─ CloudTrail analysis: Last 90 days
+│   ├─ Actions performed by developer-role:
+│   │   ├─ s3:PutObject (used)
+│   │   ├─ s3:GetObject (used)
+│   │   ├─ ec2:DescribeInstances (used)
+│   │   ├─ logs:PutLogEvents (used)
+│   │   └─ [2,847 other permissions granted but NEVER used]
+│   │
+│   ├─ Actually needed permissions: ~12 actions
+│   ├─ Granted permissions: ~5,000+ actions (AdministratorAccess)
+│   └─ Over-privileged by: 99.7%
+│
+├─ Risk scenarios agent constructs:
+│   ├─ Scenario 1: Developer account compromised
+│   │   └─ Attacker has full AWS account access
+│   ├─ Scenario 2: Accidental deletion
+│   │   └─ Developer mistakenly runs "terraform destroy" on prod
+│   ├─ Scenario 3: Malicious insider
+│   │   └─ Disgruntled developer exports all customer data
+│   └─ All scenarios: POSSIBLE due to excessive permissions
+│
+└─ Agent recommendation:
+    ├─ Current policy: AdministratorAccess (5,000+ actions)
+    ├─ Needed policy: Custom policy with 12 specific actions:
+    │   ├─ s3:GetObject
+    │   ├─ s3:PutObject
+    │   ├─ ec2:DescribeInstances
+    │   ├─ logs:PutLogEvents
+    │   └─ ... (8 more actually-used actions)
+    │
+    ├─ Auto-generated least-privilege policy:
+    │   Agent creates policy based on 90-day CloudTrail usage
+    │   └─ Includes only actions actually performed
+    │
+    └─ Migration plan:
+        ├─ Week 1: Deploy new policy in audit mode (monitor only)
+        ├─ Week 2: Validate no blocked actions
+        ├─ Week 3: Switch to enforcing mode
+        └─ Week 4: Remove AdministratorAccess
+
+Phase 5: Encryption Validation
+
+Finding 4: Unencrypted RDS database
+├─ Database: customer-analytics-db
+├─ Engine: PostgreSQL 15.3
+├─ Instance class: db.r6g.xlarge
+├─ Storage: 500 GB
+├─ Encryption: DISABLED ❌
+│
+├─ Agent analysis:
+│   ├─ Data classification: Check with Discovery Agent
+│   ├─ Discovery Agent response: Contains customer PII
+│   ├─ Compliance requirement:
+│   │   ├─ SOC 2 CC6.7: Encryption at rest required
+│   │   ├─ PCI DSS 3.4: Encryption required for cardholder data
+│   │   └─ GDPR Article 32: Encryption required for PII
+│   └─ Verdict: COMPLIANCE VIOLATION ⚠️
+│
+├─ Technical impact:
+│   ├─ If EBS volume compromised: Data readable in plaintext
+│   ├─ If snapshot leaked: Anyone can read database
+│   ├─ If backup stolen: Customer PII exposed
+│   └─ No encryption = no defense against theft
+│
+├─ Remediation complexity:
+│   ├─ RDS encryption: Cannot enable on existing instance ❌
+│   ├─ Required process:
+│   │   ├─ 1. Create encrypted snapshot
+│   │   ├─ 2. Restore snapshot to new encrypted instance
+│   │   ├─ 3. Update application connection string
+│   │   ├─ 4. Switch DNS/load balancer
+│   │   └─ 5. Delete old unencrypted instance
+│   ├─ Downtime required: ~30 minutes
+│   ├─ Risk: Application downtime during cutover
+│   └─ Effort: 4 hours (with testing)
+│
+└─ Agent recommendation:
+    ├─ Priority: HIGH (compliance violation)
+    ├─ Timeline: THIS MONTH (within 30 days)
+    ├─ Maintenance window: Plan for low-traffic period
+    ├─ Auto-generated migration runbook: Provided
+    └─ Approval required: YES (production change)
+
+Phase 6: CIS Benchmark Assessment
+
+Running CIS AWS Foundations Benchmark v1.5.0:
+├─ Total checks: 52
+├─ Passed: 39 (75%)
+├─ Failed: 13 (25%)
+├─ Compliance score: 75% ⚠️
+│
+└─ Critical failures:
+
+CIS 1.12: Root account MFA
+├─ Check: Ensure MFA enabled on root account
+├─ Result: FAIL ❌
+├─ Risk: Root account compromise (full AWS control)
+├─ Fix: Enable virtual MFA on root account
+└─ Severity: CRITICAL
+
+CIS 1.20: Support role created
+├─ Check: Ensure support role created for incident response
+├─ Result: FAIL ❌
+├─ Risk: Cannot open AWS support cases during incident
+├─ Fix: Create IAM role with AWSSupportAccess policy
+└─ Severity: MEDIUM
+
+CIS 2.1.1: S3 bucket encryption
+├─ Check: Ensure S3 buckets have default encryption
+├─ Result: FAIL ❌ (42 out of 156 buckets unencrypted)
+├─ Risk: Unencrypted data at rest
+├─ Fix: Enable default encryption on all buckets
+└─ Severity: HIGH
+
+CIS 3.1: CloudTrail enabled
+├─ Check: Ensure CloudTrail enabled in all regions
+├─ Result: PASS ✅
+├─ Evidence: Multi-region trail active
+└─ Compliant: YES
+
+CIS 4.1: Security group overly permissive
+├─ Check: Ensure no security groups allow 0.0.0.0/0 on port 22
+├─ Result: FAIL ❌ (8 security groups allow SSH from anywhere)
+├─ Risk: Brute force attacks, unauthorized access
+├─ Fix: Restrict SSH to VPN IP range
+└─ Severity: CRITICAL
+
+Agent creates CIS compliance report:
+
+┌─────────────────────────────────────────────────┐
+│ CIS AWS Foundations Benchmark Report            │
+│ Version: 1.5.0                                  │
+│ Scan Date: 2025-11-16 09:30 UTC                │
+│                                                 │
+│ Overall Score: 75% (39/52 checks)               │
+│ Compliance Level: NEEDS IMPROVEMENT ⚠️          │
+│                                                 │
+│ Critical Issues: 3                              │
+│ - Root account MFA disabled                    │
+│ - 8 security groups allow SSH from anywhere    │
+│ - 42 S3 buckets unencrypted                    │
+│                                                 │
+│ High Issues: 4                                  │
+│ Medium Issues: 6                                │
+│ Low Issues: 0                                   │
+│                                                 │
+│ Remediation Priority:                           │
+│ 1. Enable root MFA (5 minutes)                 │
+│ 2. Fix security group rules (2 hours)          │
+│ 3. Enable S3 bucket encryption (4 hours)       │
+│                                                 │
+│ Target Compliance: 90%+ (SOC 2 requirement)    │
+│ Gap to close: 15% (8 additional checks)        │
+│ Estimated effort: 12 hours                     │
+│                                                 │
+│ [View Full Report] [Auto-Remediate] [Export]   │
+└─────────────────────────────────────────────────┘
+
+Phase 7: Prioritization & Risk Scoring
+
+Agent's Infrastructure Risk Score Formula:
+Risk Score = (Severity × Exposure × Data Sensitivity) / Remediation Effort
+
+Issue 1: Public S3 bucket (company-backups-prod)
+├─ Severity: 10 (data breach, PII exposure)
+├─ Exposure: 10 (publicly accessible for 1 year)
+├─ Data sensitivity: 10 (customer PII, secrets)
+├─ Remediation effort: 1 (one-click fix)
+└─ Risk Score: (10 × 10 × 10) / 1 = 1000 ⭐ EMERGENCY
+
+Issue 2: Security group 0.0.0.0/0 all ports
+├─ Severity: 9 (full infrastructure access)
+├─ Exposure: 10 (12 production servers exposed)
+├─ Data sensitivity: 9 (customer database)
+├─ Remediation effort: 2 (change control needed)
+└─ Risk Score: (9 × 10 × 9) / 2 = 405 ⭐ CRITICAL
+
+Issue 3: Root account no MFA
+├─ Severity: 10 (full AWS account control)
+├─ Exposure: 5 (requires root password compromise)
+├─ Data sensitivity: 10 (all AWS resources)
+├─ Remediation effort: 1 (5 minute setup)
+└─ Risk Score: (10 × 5 × 10) / 1 = 500 ⭐ CRITICAL
+
+Issue 4: Unencrypted RDS database
+├─ Severity: 7 (requires physical access to EBS)
+├─ Exposure: 4 (internal AWS only, not public)
+├─ Data sensitivity: 10 (customer PII)
+├─ Remediation effort: 4 (migration required)
+└─ Risk Score: (7 × 4 × 10) / 4 = 70 ⭐ HIGH
+
+Issue 5: Overprivileged IAM role
+├─ Severity: 8 (developers have admin access)
+├─ Exposure: 7 (34 developer accounts)
+├─ Data sensitivity: 9 (can access all resources)
+├─ Remediation effort: 6 (policy migration, testing)
+└─ Risk Score: (8 × 7 × 9) / 6 = 84 ⭐ HIGH
+
+Prioritized remediation order:
+1. EMERGENCY: Block S3 bucket public access (NOW - 1 min)
+2. CRITICAL: Enable root MFA (TODAY - 5 min)
+3. CRITICAL: Fix security group 0.0.0.0/0 (TODAY - 2 hours)
+4. HIGH: Reduce IAM permissions (THIS WEEK - 6 hours)
+5. HIGH: Encrypt RDS database (THIS MONTH - 4 hours)
+```
+
+### **Reasoning: Infrastructure as Code (IaC) Scanning**
+
+**Question: Should we scan IaC before or after deployment?**
+
+```
+Infrastructure Scanner Agent's IaC security strategy:
+
+Pre-Deployment Scanning (Shift Left):
+├─ When: During development, PR review, CI/CD pipeline
+├─ Tools: Checkov, tfsec, Terrascan
+├─ Scans:
+│   ├─ Terraform files (.tf)
+│   ├─ CloudFormation templates (.yaml/.json)
+│   ├─ Kubernetes manifests (.yaml)
+│   └─ Helm charts
+│
+├─ What it catches:
+│   ├─ Security group misconfigurations
+│   ├─ Unencrypted resources
+│   ├─ Public exposure configurations
+│   ├─ Hardcoded secrets
+│   └─ Non-compliant resource settings
+│
+├─ Benefits:
+│   ├─ Catch issues BEFORE deployment (no production impact)
+│   ├─ Immediate developer feedback (in PR review)
+│   ├─ Prevents misconfigurations from reaching production
+│   ├─ Cost: $0 (no infrastructure changes needed)
+│   └─ Compliance: Shift security left
+│
+└─ Limitations:
+    ├─ Only checks declared resources (not runtime changes)
+    ├─ Doesn't catch manual console changes
+    └─ Drift detection not possible (not deployed yet)
+
+Post-Deployment Scanning (Runtime Validation):
+├─ When: Daily/weekly scans of live infrastructure
+├─ Tools: Prowler, ScoutSuite, AWS Config
+├─ Scans:
+│   ├─ Actual AWS/Azure/GCP resources
+│   ├─ Runtime configurations
+│   ├─ Manual changes via console
+│   └─ Drift from IaC definitions
+│
+├─ What it catches:
+│   ├─ Configuration drift (manual changes)
+│   ├─ Console-created resources (not in IaC)
+│   ├─ Compromised resources (attacker modifications)
+│   ├─ Policy violations introduced post-deployment
+│   └─ Real-world attack surface
+│
+├─ Benefits:
+│   ├─ Detects ALL resources (including manual)
+│   ├─ Catches runtime misconfigurations
+│   ├─ Identifies drift from IaC
+│   ├─ Real attack surface visibility
+│   └─ Compliance: Continuous validation
+│
+└─ Limitations:
+    ├─ Issues already in production (may require downtime to fix)
+    ├─ Reactive (after deployment)
+    └─ Remediation more complex (production changes)
+
+Agent's Integrated Approach (Defense in Depth):
+
+Development Phase:
+├─ Developer writes Terraform:
+│   main.tf creates S3 bucket without encryption
+│
+└─ Pre-commit hook (local):
+    ├─ Checkov scans main.tf
+    ├─ Finding: "S3 bucket encryption disabled"
+    ├─ Commit BLOCKED
+    └─ Developer adds encryption before committing
+
+Pull Request Phase:
+├─ PR created with Terraform changes
+├─ GitHub Actions runs IaC scan
+├─ Findings:
+│   ├─ Security group allows 0.0.0.0/0 on port 22
+│   └─ PR status: FAILED
+├─ Merge button: DISABLED
+└─ Developer fixes before merge
+
+Deployment Phase:
+├─ After PR merged, Terraform apply runs
+├─ Post-deployment validation:
+│   ├─ Agent scans actual deployed resources
+│   ├─ Verifies encryption enabled (matches IaC)
+│   ├─ Confirms security groups match definition
+│   └─ Result: PASS ✅
+└─ Evidence: Deployment compliant with security policy
+
+Runtime Phase (Daily):
+├─ Daily infrastructure scan
+├─ Detects:
+│   ├─ Someone manually added security group rule via console
+│   │   └─ Rule: Allow 0.0.0.0/0 on port 3389 (RDP)
+│   ├─ This was NOT in Terraform (manual change)
+│   └─ Configuration drift detected ⚠️
+│
+└─ Agent actions:
+    ├─ Alert: "Manual security group change detected"
+    ├─ Options:
+    │   ├─ 1. Revert to IaC definition (remove manual rule)
+    │   ├─ 2. Update IaC to match (make drift intentional)
+    │   └─ 3. Create exception (document why manual change)
+    └─ Prevents drift from causing long-term security gaps
+
+Real-world example:
+"We scan IaC in PR (prevent issues from merging).
+ We scan infrastructure daily (catch manual changes).
+ Together: Comprehensive coverage of all configuration sources."
+```
+
+### **Edge Cases**
+
+**Edge Case 1: False Positive - Development Resources in Production Account**
+
+```
+Scenario: CIS benchmark flags "insecure" resource that is intentionally insecure for testing
+
+Finding:
+├─ Resource: EC2 instance (i-0a1b2c3d4e5f6g7h8)
+├─ Security group: sg-dev-testing (allows 0.0.0.0/0 on all ports)
+├─ CIS check: FAIL ❌ (security group too permissive)
+├─ Severity: CRITICAL (internet-exposed on all ports)
+└─ Standard recommendation: Fix immediately
+
+Infrastructure Scanner Agent Deep Analysis:
+
+Step 1: Context gathering
+├─ Instance name: "dev-playground-testing"
+├─ Tags:
+│   ├─ Environment: development
+│   ├─ Purpose: security-testing
+│   ├─ Owner: security-team@company.com
+│   ├─ Auto-shutdown: true (shuts down at 6 PM daily)
+│   └─ Expiration: 2025-11-30 (temporary resource)
+│
+├─ Instance details:
+│   ├─ VPC: vpc-dev (isolated development VPC)
+│   ├─ Subnet: subnet-isolated (no route to production)
+│   ├─ Instance size: t3.micro (minimal)
+│   ├─ Data stored: NONE (ephemeral, recreated daily)
+│   └─ Network access: Cannot reach production resources
+│
+└─ Agent reasoning:
+    "This is a development testing instance, not production.
+     Tagged for auto-shutdown, expires in 2 weeks.
+     Isolated VPC with no production access.
+     Intentionally insecure for security testing purposes."
+
+Step 2: Risk assessment in context
+├─ Is this a real security risk?
+│   ├─ Data sensitivity: NONE (no production data)
+│   ├─ Network isolation: YES (cannot reach production)
+│   ├─ Temporary: YES (auto-expires in 2 weeks)
+│   ├─ Auto-shutdown: YES (not running 24/7)
+│   └─ Blast radius: MINIMAL (isolated instance)
+│
+├─ Why is it flagged?
+│   ├─ CIS benchmark: Generic rule (all environments)
+│   ├─ Doesn't understand: Development vs. production context
+│   └─ Treats all findings equally
+│
+└─ Agent decision:
+    ├─ Real risk: LOW (acceptable for development)
+    ├─ CIS violation: TRUE (technically fails benchmark)
+    └─ Action: Document exception, don't fix
+
+Step 3: Exception handling
+├─ Agent determines this is a VALID EXCEPTION
+├─ Reasoning framework:
+│   ├─ Is resource tagged as development? YES ✅
+│   ├─ Is resource isolated from production? YES ✅
+│   ├─ Is there a business justification? YES (security testing) ✅
+│   ├─ Is there an expiration date? YES (auto-expires) ✅
+│   └─ Conclusion: Exception acceptable
+│
+└─ Documentation requirements:
+    ├─ Exception must be:
+    │   ├─ Documented in risk register
+    │   ├─ Approved by security team
+    │   ├─ Time-limited (expiration date)
+    │   └─ Reviewed quarterly
+    │
+    └─ Agent creates exception record:
+
+┌─────────────────────────────────────────────────┐
+│ SECURITY EXCEPTION RECOMMENDATION               │
+│                                                 │
+│ Resource: i-0a1b2c3d4e5f6g7h8                  │
+│ Finding: CIS 4.1 - Permissive security group   │
+│ Severity: CRITICAL (by CIS benchmark)           │
+│                                                 │
+│ Recommendation: APPROVE EXCEPTION               │
+│                                                 │
+│ Justification:                                  │
+│ - Development testing environment               │
+│ - No production data                           │
+│ - Network isolated from production             │
+│ - Auto-shutdown enabled (6 PM daily)           │
+│ - Temporary (expires 2025-11-30)               │
+│                                                 │
+│ Compensating Controls:                          │
+│ - VPC isolation (no production network access) │
+│ - Auto-shutdown (reduces exposure window)      │
+│ - Expiration enforcement (auto-deletion)       │
+│ - Monitoring (alert if instance reaches prod)  │
+│                                                 │
+│ Exception Terms:                                │
+│ - Valid until: 2025-11-30                      │
+│ - Review frequency: Quarterly                  │
+│ - Owner: security-team@company.com             │
+│ - Approval required: Security manager          │
+│                                                 │
+│ Evidence for Auditor:                           │
+│ "This finding is a false positive for our      │
+│  use case. Resource is intentionally insecure  │
+│  for security testing purposes, with proper    │
+│  isolation and compensating controls."         │
+│                                                 │
+│ [Approve Exception] [Reject] [Request Changes] │
+└─────────────────────────────────────────────────┘
+
+Step 4: Preventing alert fatigue
+├─ Problem: If agent alerts on this every scan, team ignores alerts
+├─ Solution: Suppress finding with context-aware logic
+│
+└─ Suppression rule agent creates:
+    "If resource has ALL of the following:
+     - Tag: Environment = development
+     - Tag: Purpose = security-testing
+     - Tag: Auto-shutdown = true
+     - VPC: vpc-dev (development VPC)
+     Then: Suppress CIS 4.1 finding (document exception)
+     Else: Alert as CRITICAL"
+
+Learning for future:
+"Not all CIS benchmark failures are security issues.
+ Context matters: Development vs. production.
+ Exceptions are okay IF properly documented and controlled.
+ Automated suppression prevents alert fatigue."
+```
+
+**Edge Case 2: Multi-Cloud Compliance (AWS + GCP + Azure)**
+
+```
+Scenario: Company uses multiple cloud providers, need consistent security posture
+
+Infrastructure:
+├─ AWS: Production workloads (primary)
+├─ GCP: ML/AI training (secondary)
+├─ Azure: Office 365 + AD integration (tertiary)
+└─ Challenge: Consistent security across 3 clouds
+
+Infrastructure Scanner Agent Multi-Cloud Strategy:
+
+Phase 1: Unified control mapping
+├─ Each cloud has different security controls
+├─ Agent maps controls to common framework:
+│   ├─ CIS Benchmark: AWS Foundation, GCP Foundation, Azure Foundation
+│   ├─ SOC 2: CC6.6, CC6.7, CC7.2
+│   └─ Common control: "Encryption at rest"
+│
+└─ Example mapping:
+
+   SOC 2 Control: CC6.7 (Encryption at rest)
+   ├─ AWS implementation:
+   │   ├─ S3: Enable default bucket encryption
+   │   ├─ RDS: Enable storage encryption
+   │   └─ EBS: Enable volume encryption
+   │
+   ├─ GCP implementation:
+   │   ├─ Cloud Storage: Enable encryption (default)
+   │   ├─ Cloud SQL: Enable customer-managed keys
+   │   └─ Compute disks: Enable disk encryption
+   │
+   └─ Azure implementation:
+       ├─ Blob Storage: Enable storage encryption
+       ├─ SQL Database: Enable TDE (Transparent Data Encryption)
+       └─ VMs: Enable Azure Disk Encryption
+
+Phase 2: Consistent scanning
+├─ Agent scans all 3 clouds DAILY
+├─ AWS scan: Prowler (CIS AWS Benchmark)
+├─ GCP scan: ScoutSuite (CIS GCP Benchmark)
+├─ Azure scan: ScoutSuite (CIS Azure Benchmark)
+│
+└─ Unified dashboard:
+
+   ┌─────────────────────────────────────────────┐
+   │ Multi-Cloud Security Posture Dashboard      │
+   │                                             │
+   │ AWS (Production):                           │
+   │ ├─ CIS Score: 87% (45/52 checks)           │
+   │ ├─ Critical: 2 findings                    │
+   │ └─ Last scan: 2025-11-16 09:00 UTC         │
+   │                                             │
+   │ GCP (ML Training):                          │
+   │ ├─ CIS Score: 92% (46/50 checks)           │
+   │ ├─ Critical: 1 finding                     │
+   │ └─ Last scan: 2025-11-16 09:15 UTC         │
+   │                                             │
+   │ Azure (Office 365):                         │
+   │ ├─ CIS Score: 78% (39/50 checks)           │
+   │ ├─ Critical: 3 findings                    │
+   │ └─ Last scan: 2025-11-16 09:30 UTC         │
+   │                                             │
+   │ Overall Compliance: 86%                     │
+   │ Target: 90%+ (SOC 2 requirement)           │
+   │ Gap: 4% (7 findings to remediate)          │
+   │                                             │
+   │ [View AWS] [View GCP] [View Azure] [Export]│
+   └─────────────────────────────────────────────┘
+
+Phase 3: Handling cloud-specific quirks
+
+AWS-specific challenge:
+├─ Finding: S3 bucket "company-data" has public access
+├─ AWS Check: Block Public Access = DISABLED ❌
+├─ Agent action: CRITICAL alert (standard response)
+└─ Result: Fix applied ✅
+
+GCP-specific challenge:
+├─ Finding: Cloud Storage bucket "company-ml-data" has public access
+├─ GCP Check: IAM member "allUsers" has access
+├─ Agent discovers: GCP uses "allUsers" for CDN caching (intentional)
+├─ Context: This bucket serves ML model assets to public API
+├─ Risk assessment:
+│   ├─ Contents: ML model weights (public anyway)
+│   ├─ Sensitive data: NONE
+│   ├─ Business need: Public access required for API
+│   └─ Decision: EXCEPTION approved
+└─ Result: Documented exception (not a finding)
+
+Azure-specific challenge:
+├─ Finding: Storage account "companyoffice365" allows HTTP (not HTTPS)
+├─ Azure Check: Secure transfer required = DISABLED ❌
+├─ Agent investigates: Why is HTTP allowed?
+├─ Context discovery:
+│   ├─ Storage account: Used by SharePoint Online
+│   ├─ Microsoft-managed: Part of Office 365
+│   ├─ Configuration: Microsoft controls security settings
+│   └─ Cannot modify: Azure AD tenant setting
+├─ Agent reasoning:
+│   "This is a Microsoft-managed resource.
+│    We don't control security configuration.
+│    Microsoft ensures HTTPS enforcement at Office 365 layer.
+│    CIS Azure benchmark doesn't account for O365 integration."
+├─ Decision: Suppress finding (not applicable to managed services)
+└─ Result: Documented in exceptions log
+
+Phase 4: Unified remediation workflow
+├─ Agent prioritizes findings across ALL clouds
+├─ Risk scoring (same formula for all clouds):
+│   Risk = (Severity × Exposure × Data Sensitivity) / Effort
+│
+└─ Unified remediation queue:
+
+   Priority 1: AWS - Public S3 bucket (Risk: 1000) - EMERGENCY
+   Priority 2: Azure - Unencrypted SQL database (Risk: 500) - CRITICAL
+   Priority 3: GCP - Overprivileged service account (Risk: 350) - CRITICAL
+   Priority 4: AWS - Root MFA disabled (Risk: 250) - HIGH
+   Priority 5: Azure - No network security groups (Risk: 180) - HIGH
+
+Multi-cloud coordination:
+"Each cloud is different, but security principles are the same.
+ Agent maps controls to common framework (SOC 2, CIS).
+ Findings prioritized across all clouds.
+ Remediation teams get unified queue (not separate per cloud)."
+```
+
+**Edge Case 3: Configuration Drift Detection & Auto-Remediation**
+
+```
+Scenario: Someone makes manual change via AWS console (bypasses IaC)
+
+Background:
+├─ Infrastructure managed by: Terraform
+├─ Terraform state: S3 backend
+├─ Policy: All changes must go through Terraform
+└─ Reality: Developers sometimes use AWS console for "quick fixes"
+
+Drift Detection:
+
+09:00 AM: Infrastructure Scanner runs daily scan
+├─ Compares: Live AWS resources vs. Terraform state
+├─ Detection method:
+│   ├─ terraform plan (dry run)
+│   ├─ Expected: "No changes needed"
+│   ├─ Actual: "Plan: 0 to add, 1 to change, 0 to destroy"
+│   └─ Verdict: DRIFT DETECTED ⚠️
+│
+└─ Drift details:
+
+   Resource: aws_security_group.web_servers
+   Attribute: ingress rule
+
+   Terraform (expected):
+   ├─ Port 443 (HTTPS) from 0.0.0.0/0
+   └─ Port 80 (HTTP) from 0.0.0.0/0
+
+   AWS (actual):
+   ├─ Port 443 (HTTPS) from 0.0.0.0/0
+   ├─ Port 80 (HTTP) from 0.0.0.0/0
+   └─ Port 8080 (HTTP alt) from 0.0.0.0/0 ⚠️ DRIFT
+
+   Difference: Port 8080 rule added manually (not in Terraform)
+
+Infrastructure Scanner Agent Investigation:
+
+Step 1: Determine who made the change
+├─ Query CloudTrail:
+│   ├─ Action: ec2:AuthorizeSecurityGroupIngress
+│   ├─ Timestamp: 2025-11-15 18:45 UTC (yesterday evening)
+│   ├─ User: alice@company.com (developer)
+│   ├─ Source IP: 203.0.113.42
+│   └─ User agent: AWS Console
+│
+├─ Context from user:
+│   └─ (Agent queries: "Why did you add port 8080 rule?")
+│   └─ Response: "Debugging production issue, needed access urgently"
+│
+└─ Agent reasoning:
+    "Manual change made during incident response.
+     Developer bypassed Terraform for urgent fix.
+     Now drift exists between Terraform and AWS reality."
+
+Step 2: Assess security impact
+├─ New rule: Port 8080 from 0.0.0.0/0
+├─ Service on port 8080: Debug endpoint (application metrics)
+├─ Sensitive data: YES (exposes internal metrics)
+├─ Should be public: NO ❌
+├─ Intended use: Temporary debugging (forgot to remove)
+└─ Security risk: MEDIUM (info disclosure)
+
+Step 3: Remediation decision matrix
+
+Option A: Auto-revert (remove port 8080 rule)
+├─ Pros:
+│   ├─ Enforces infrastructure as code
+│   ├─ Eliminates drift immediately
+│   └─ No security risk from manual rule
+├─ Cons:
+│   ├─ May break debugging in progress
+│   ├─ Developer frustration (work undone)
+│   └─ Doesn't understand if change is needed
+└─ Assessment: RISKY (may break legitimate debugging)
+
+Option B: Update Terraform to match reality
+├─ Pros:
+│   ├─ Preserves manual change
+│   ├─ No disruption to debugging
+│   └─ Drift eliminated (Terraform updated)
+├─ Cons:
+│   ├─ Legitimizes insecure configuration
+│   ├─ Port 8080 remains public (security risk)
+│   └─ Doesn't enforce security policy
+└─ Assessment: NOT RECOMMENDED (validates bad practice)
+
+Option C: Alert + require decision (agent's choice)
+├─ Pros:
+│   ├─ Human decides best action
+│   ├─ Context-aware (considers debugging need)
+│   └─ Teaches developer to use IaC
+├─ Cons:
+│   ├─ Requires human intervention
+│   └─ Drift exists until resolved
+└─ Assessment: BEST APPROACH (balanced)
+
+Agent action:
+
+┌─────────────────────────────────────────────────┐
+│ ⚠️ CONFIGURATION DRIFT DETECTED                 │
+│                                                 │
+│ Resource: Security Group (web_servers)         │
+│ Drift: Port 8080 rule added manually           │
+│ Change by: alice@company.com                   │
+│ Change date: 2025-11-15 18:45 UTC              │
+│                                                 │
+│ Manual Change:                                  │
+│ + Port 8080 (HTTP alt) from 0.0.0.0/0          │
+│   (Not defined in Terraform)                   │
+│                                                 │
+│ Security Assessment:                            │
+│ - Port 8080: Debug endpoint (internal metrics) │
+│ - Public exposure: YES (entire internet)       │
+│ - Risk: MEDIUM (information disclosure)        │
+│                                                 │
+│ Recommended Action:                             │
+│ If debugging complete:                          │
+│   → Remove port 8080 rule (revert to Terraform)│
+│                                                 │
+│ If debugging still needed:                      │
+│   → Restrict port 8080 to VPN IP range only    │
+│   → Update Terraform to match                  │
+│   → Set expiration (auto-remove in 48 hours)   │
+│                                                 │
+│ Options:                                        │
+│ 1. [Auto-Revert] (remove port 8080 now)        │
+│ 2. [Update Terraform] (keep rule, add to IaC)  │
+│ 3. [Temporary Exception] (allow for 48 hours)  │
+│                                                 │
+│ Deadline: 24 hours (or drift will auto-revert) │
+│                                                 │
+│ [Choose Action] [View CloudTrail] [Details]    │
+└─────────────────────────────────────────────────┘
+
+Step 4: Developer response
+├─ Developer chooses: "Temporary Exception (48 hours)"
+├─ Justification: "Still debugging, will remove after fix deployed"
+├─ Agent actions:
+│   ├─ 1. Create exception record (EXC-7820)
+│   ├─ 2. Set auto-expiration: 2025-11-18 18:45 UTC (48 hours)
+│   ├─ 3. Add monitoring: Alert if port 8080 accessed from non-VPN IPs
+│   └─ 4. Schedule auto-revert: If not resolved in 48 hours, remove rule
+│
+└─ Evidence for audit:
+    ├─ Drift detected: 2025-11-16 09:00 UTC
+    ├─ Owner notified: alice@company.com
+    ├─ Exception approved: Temporary (48 hours)
+    ├─ Auto-revert scheduled: 2025-11-18 18:45 UTC
+    └─ Monitoring enabled: Public access alerts
+
+48 hours later:
+
+2025-11-18 18:45 UTC: Exception expires
+├─ Agent checks: Has developer removed port 8080 rule?
+├─ AWS reality: Port 8080 rule STILL EXISTS ❌
+├─ Developer action: NONE (forgot to remove)
+│
+└─ Agent auto-remediation:
+    ├─ Action: Remove port 8080 rule (revert to Terraform)
+    ├─ Method: terraform apply (automated)
+    ├─ Notification: Email to alice@company.com
+    │   "Port 8080 rule auto-removed (48-hour exception expired).
+    │    If still needed, update Terraform and create PR."
+    └─ Result: Drift eliminated, security restored ✅
+
+Learning for future:
+"Configuration drift is inevitable (humans bypass IaC).
+ Agent detects drift within 24 hours (daily scans).
+ Temporary exceptions allow flexibility (debugging, incidents).
+ Auto-expiration prevents drift from becoming permanent.
+ Enforcement: If exception expires, auto-revert to IaC."
+```
+
+### **Cross-Agent Communication**
+
+**Coordination with Code Security Scanner Agent:**
+
+```
+Workflow: Container image vulnerability correlation
+
+Scenario: Infrastructure Scanner finds vulnerable container in production,
+          Code Security Scanner provides application context
+
+Timeline:
+
+10:00 AM: Infrastructure Scanner scans ECS cluster
+├─ Cluster: production-api
+├─ Service: company-api-service
+├─ Task definition: company-api:v2.14.3
+├─ Container image: company-api:v2.14.3
+│
+└─ Container scan results:
+    ├─ Base image: node:16.18.0
+    ├─ OS: Debian 11 (bullseye)
+    ├─ Vulnerabilities found: 47
+    │   ├─ CRITICAL: 2
+    │   ├─ HIGH: 8
+    │   ├─ MEDIUM: 15
+    │   └─ LOW: 22
+    │
+    └─ Critical vulnerability details:
+
+Critical CVE 1: CVE-2023-12345 (OpenSSL)
+├─ Package: openssl 1.1.1n
+├─ Vulnerability: Remote code execution
+├─ CVSS: 9.8/10.0
+├─ Fixed version: openssl 1.1.1t
+├─ Exploit available: YES (public PoC)
+└─ Running in production: YES ⚠️
+
+10:01 AM: Infrastructure Scanner queries Code Security Scanner
+├─ Question: "Is this container built from our source code?"
+├─ Message to Code Security Scanner:
+│   {
+│     "type": "container_context_request",
+│     "image": "company-api:v2.14.3",
+│     "cve": "CVE-2023-12345",
+│     "package": "openssl 1.1.1n",
+│     "questions": [
+│       "Which Dockerfile builds this image?",
+│       "Do we use OpenSSL in application code?",
+│       "Can we upgrade base image?",
+│       "What's the deployment process?"
+│     ]
+│   }
+│
+└─ Sent to: Code Security Scanner Agent
+
+10:02 AM: Code Security Scanner investigates
+├─ Searches repository: company-api
+├─ Dockerfile found: docker/Dockerfile
+├─ Dockerfile analysis:
+│   ```
+│   FROM node:16.18.0        ← Base image (contains vulnerable OpenSSL)
+│   WORKDIR /app
+│   COPY package*.json ./
+│   RUN npm install
+│   COPY . .
+│   CMD ["node", "server.js"]
+│   ```
+│
+├─ Application code analysis:
+│   ├─ Direct OpenSSL usage: NO (Node.js uses OpenSSL internally)
+│   ├─ HTTPS endpoints: YES (Express with HTTPS)
+│   ├─ TLS handshake: YES (node:crypto module, which uses OpenSSL)
+│   └─ Verdict: Application DOES use vulnerable OpenSSL (indirectly)
+│
+├─ Exploitability assessment:
+│   ├─ Attack vector: HTTPS connection (TLS handshake)
+│   ├─ Exploitable: YES (application accepts HTTPS)
+│   ├─ Public-facing: YES (ALB → ECS)
+│   ├─ Impact: Remote code execution in container
+│   └─ Severity: CRITICAL (can compromise production API)
+│
+├─ Fix analysis:
+│   ├─ Solution: Upgrade base image to node:16.20.0 (has OpenSSL 1.1.1t)
+│   ├─ Breaking changes: NONE (same Node version, just OpenSSL patch)
+│   ├─ Testing required: Regression tests (HTTPS endpoints)
+│   └─ Deployment effort: 1 hour (rebuild image, deploy)
+│
+└─ Code Security Scanner response:
+    {
+      "image_source": "docker/Dockerfile (company-api repo)",
+      "base_image": "node:16.18.0",
+      "vulnerable_package": "openssl 1.1.1n (from base image)",
+      "application_usage": "INDIRECT (Node.js crypto, HTTPS)",
+      "exploitable": true,
+      "exploit_vector": "HTTPS TLS handshake",
+      "recommended_fix": {
+        "action": "Upgrade base image",
+        "new_base": "node:16.20.0",
+        "breaking_changes": "NONE",
+        "testing": "Regression tests (HTTPS)",
+        "effort_hours": 1,
+        "pr_auto_created": true,
+        "pr_url": "https://github.com/company/company-api/pull/891"
+      },
+      "urgency": "CRITICAL (exploit available, production exposed)"
+    }
+
+10:03 AM: Infrastructure Scanner receives response
+├─ Enriched finding with application context:
+│   ├─ Vulnerability: CVE-2023-12345 (OpenSSL RCE)
+│   ├─ Source: Base image (node:16.18.0)
+│   ├─ Application impact: DIRECT (uses OpenSSL via Node crypto)
+│   ├─ Exploitability: CONFIRMED (public exploit + HTTPS endpoint)
+│   ├─ Fix available: YES (upgrade to node:16.20.0)
+│   └─ Remediation: PR auto-created by Code Security Scanner
+│
+└─ Combined alert from both agents:
+
+┌─────────────────────────────────────────────────┐
+│ 🚨 CRITICAL CONTAINER VULNERABILITY             │
+│                                                 │
+│ Container: company-api:v2.14.3 (PRODUCTION)    │
+│ CVE: CVE-2023-12345 (OpenSSL RCE)              │
+│ Severity: CRITICAL (9.8/10.0)                   │
+│                                                 │
+│ Infrastructure Scanner Findings:                │
+│ - Vulnerable container running in production   │
+│ - 47 total vulnerabilities (2 critical)        │
+│ - Deployed to: production-api ECS cluster      │
+│ - Public exposure: YES (via ALB)               │
+│                                                 │
+│ Code Security Scanner Analysis:                 │
+│ - Source: docker/Dockerfile (company-api)      │
+│ - Base image: node:16.18.0 (contains vuln)     │
+│ - Application uses: Node crypto (HTTPS/TLS)    │
+│ - Exploitable: YES (HTTPS TLS handshake)       │
+│ - Public exploit: AVAILABLE                    │
+│                                                 │
+│ Impact:                                         │
+│ - Remote code execution possible               │
+│ - Attacker can compromise production API       │
+│ - Customer data at risk                        │
+│                                                 │
+│ Remediation (AUTO-GENERATED):                   │
+│ ✅ PR created: #891 (upgrade to node:16.20.0)  │
+│ ✅ CI/CD running: Tests passing                │
+│ ✅ Deployment ready: Merge to deploy           │
+│                                                 │
+│ Actions Required:                               │
+│ 1. Review PR #891 (security team + eng lead)   │
+│ 2. Merge PR (deploys fix automatically)        │
+│ 3. Verify deployment (agent will validate)     │
+│                                                 │
+│ Timeline: URGENT (merge within 24 hours)       │
+│                                                 │
+│ [View PR] [Approve] [Emergency Deploy]         │
+└─────────────────────────────────────────────────┘
+
+Cross-Agent Workflow Benefits:
+
+Combined Intelligence:
+"Infrastructure Scanner knows WHAT is vulnerable (container image).
+ Code Security Scanner knows WHY it's vulnerable (application code context).
+ Together: Complete picture of risk + remediation."
+
+Automated Remediation:
+"Code Security Scanner creates PR with fix (infrastructure change).
+ Infrastructure Scanner validates deployment (confirms fix applied).
+ No manual coordination needed between agents."
+
+Evidence Chain:
+"For SOC 2 audit:
+ - Vulnerability discovered: Infrastructure Scanner (daily scan)
+ - Root cause identified: Code Security Scanner (Dockerfile analysis)
+ - Fix proposed: Code Security Scanner (automated PR)
+ - Deployment validated: Infrastructure Scanner (post-deployment scan)
+ Complete audit trail with timestamps."
+```
+
+**Coordination with Infrastructure Security Agent:**
+
+```
+Workflow: Network segmentation validation
+
+Scenario: Infrastructure Scanner finds resources, Infrastructure Security Agent validates network isolation
+
+Background:
+├─ Company policy: Production and development must be network-isolated
+├─ Compliance requirement: PCI DSS 1.3.2 (network segmentation)
+└─ Question: Are production and dev truly isolated?
+
+Phase 1: Infrastructure Scanner discovers resources
+├─ VPC: vpc-production
+│   ├─ CIDR: 10.0.0.0/16
+│   ├─ Subnets:
+│   │   ├─ 10.0.1.0/24 (public - web servers)
+│   │   ├─ 10.0.2.0/24 (private - app servers)
+│   │   └─ 10.0.3.0/24 (private - databases)
+│   └─ Resources: 89 (EC2, RDS, Lambda)
+│
+├─ VPC: vpc-development
+│   ├─ CIDR: 10.1.0.0/16
+│   ├─ Subnets:
+│   │   ├─ 10.1.1.0/24 (public - dev web)
+│   │   ├─ 10.1.2.0/24 (private - dev app)
+│   │   └─ 10.1.3.0/24 (private - dev db)
+│   └─ Resources: 34 (EC2, RDS)
+│
+└─ Question: Can resources in vpc-development access vpc-production?
+
+Phase 2: Infrastructure Scanner queries Infrastructure Security Agent
+├─ Message:
+│   {
+│     "type": "network_segmentation_validation",
+│     "source_vpc": "vpc-development",
+│     "target_vpc": "vpc-production",
+│     "question": "Is there ANY network path between dev and prod?",
+│     "compliance": "PCI DSS 1.3.2 (network segmentation)"
+│   }
+│
+└─ Sent to: Infrastructure Security Agent
+
+Phase 3: Infrastructure Security Agent analysis
+├─ Check 1: VPC Peering
+│   ├─ Query: List all VPC peering connections
+│   ├─ Result: vpc-peer-12345
+│   │   ├─ Requester: vpc-development
+│   │   ├─ Accepter: vpc-production
+│   │   ├─ Status: ACTIVE ⚠️
+│   │   └─ Routes: Configured (traffic allowed)
+│   └─ Finding: VPCs ARE peered (network connection exists)
+│
+├─ Check 2: Route Tables
+│   ├─ VPC: vpc-development
+│   ├─ Route table: rtb-dev-main
+│   ├─ Routes:
+│   │   ├─ 10.1.0.0/16 → local (development VPC)
+│   │   ├─ 10.0.0.0/16 → vpc-peer-12345 (production VPC) ⚠️
+│   │   └─ 0.0.0.0/0 → igw-dev (internet)
+│   └─ Finding: Route exists to production VPC
+│
+├─ Check 3: Security Groups
+│   ├─ Production database security group:
+│   │   ├─ Inbound rules:
+│   │   │   ├─ Port 5432 from 10.0.2.0/24 (prod app servers) ✅
+│   │   │   ├─ Port 5432 from 10.1.0.0/16 (ENTIRE dev VPC) ⚠️
+│   │   │   └─ WHY? "Allow dev access for testing"
+│   │   └─ Finding: Production database ALLOWS connections from development
+│   │
+│   └─ Verdict: Network path exists + security groups allow traffic
+│
+├─ Check 4: Network ACLs
+│   ├─ Production VPC NACLs:
+│   │   ├─ Inbound: ALLOW ALL from 10.0.0.0/8 (includes 10.1.x.x dev)
+│   │   └─ Finding: NACLs don't block dev-to-prod traffic
+│   │
+│   └─ No additional network isolation beyond security groups
+│
+└─ Infrastructure Security Agent response:
+    {
+      "segmentation_status": "FAILED",
+      "isolation_effective": false,
+      "findings": [
+        {
+          "type": "VPC Peering",
+          "detail": "vpc-development and vpc-production are peered",
+          "risk": "Network connectivity exists"
+        },
+        {
+          "type": "Route Tables",
+          "detail": "Route from dev VPC to prod VPC (10.0.0.0/16)",
+          "risk": "Traffic can flow between VPCs"
+        },
+        {
+          "type": "Security Groups",
+          "detail": "Production DB allows port 5432 from 10.1.0.0/16 (dev)",
+          "risk": "Development can access production database"
+        },
+        {
+          "type": "Network ACLs",
+          "detail": "No additional isolation at NACL layer",
+          "risk": "No defense if security groups misconfigured"
+        }
+      ],
+      "compliance_impact": "PCI DSS 1.3.2 VIOLATION",
+      "severity": "CRITICAL",
+      "recommendation": "Remove VPC peering OR add strict security controls"
+    }
+
+Phase 4: Combined finding
+├─ Infrastructure Scanner + Infrastructure Security Agent joint alert:
+│
+└─ Alert created:
+
+┌─────────────────────────────────────────────────┐
+│ 🚨 COMPLIANCE VIOLATION: Network Segmentation   │
+│                                                 │
+│ Control: PCI DSS 1.3.2 (Network Segmentation)  │
+│ Status: FAILED ❌                               │
+│                                                 │
+│ Infrastructure Scanner Discovery:               │
+│ - Production VPC: vpc-production (10.0.0.0/16) │
+│ - Development VPC: vpc-development (10.1.0.0/16)│
+│ - Expected: Complete network isolation         │
+│                                                 │
+│ Infrastructure Security Agent Validation:       │
+│ - VPC Peering: ACTIVE (vpcs connected)         │
+│ - Route Tables: Routes exist (traffic allowed) │
+│ - Security Groups: Prod DB allows dev access   │
+│ - Network ACLs: No isolation                   │
+│                                                 │
+│ Compliance Impact:                              │
+│ - Violation: PCI DSS 1.3.2 (segmentation)      │
+│ - Risk: Development can access production      │
+│ - Attack scenario: Dev compromise → prod breach│
+│ - Audit finding: CRITICAL                      │
+│                                                 │
+│ Evidence of Access:                             │
+│ - Port 5432 (PostgreSQL) accessible from dev   │
+│ - Production database exposed to dev VPC       │
+│ - No compensating controls detected            │
+│                                                 │
+│ Recommended Fixes (choose one):                 │
+│                                                 │
+│ Option A: Remove VPC Peering (RECOMMENDED)     │
+│ - Delete vpc-peer-12345                        │
+│ - Remove routes to production from dev         │
+│ - Complete network isolation                   │
+│ - Impact: Dev cannot access prod (desired)     │
+│ - Effort: 1 hour                                │
+│                                                 │
+│ Option B: Strict Security Controls              │
+│ - Keep peering (if business need exists)       │
+│ - Remove 10.1.0.0/16 from prod security groups │
+│ - Add Transit Gateway with inspection          │
+│ - Deploy network firewall (AWS Network FW)     │
+│ - Impact: More complex, higher cost            │
+│ - Effort: 2 weeks                               │
+│                                                 │
+│ Deadline: 7 days (critical compliance gap)     │
+│                                                 │
+│ [Remediate Option A] [Remediate Option B]      │
+│ [Request Exception] [View Details]             │
+└─────────────────────────────────────────────────┘
+
+Cross-Agent Collaboration Value:
+
+Infrastructure Scanner Role:
+"Discovers what resources exist and their configurations.
+ Maps VPCs, subnets, peering connections, route tables."
+
+Infrastructure Security Agent Role:
+"Validates actual network connectivity and security controls.
+ Tests if traffic can flow, analyzes security group rules."
+
+Together:
+"Complete network security picture:
+ - Discovery: What exists (Infrastructure Scanner)
+ - Validation: What's actually secure (Infrastructure Security Agent)
+ - Combined: Compliance evidence for auditors"
+```
+
+### **Success Metrics**
+
+**Infrastructure Scanner Agent Performance:**
+- Cloud resources scanned: 100% of AWS/GCP/Azure resources (daily)
+- CIS Benchmark compliance: Target 90%+ (actual: 87%)
+- Critical findings detection rate: Target 100% (actual: 100%)
+- False positive rate: Target <10% (actual: 8%)
+- Mean time to detect (MTTD):
+  - Misconfiguration introduced: Target <24 hours (actual: 4 hours)
+  - Drift detection: Target <24 hours (actual: 12 hours)
+- Mean time to remediate (MTTR):
+  - CRITICAL: Target <48 hours (actual: 16 hours)
+  - HIGH: Target <7 days (actual: 4.2 days)
+  - MEDIUM: Target <30 days (actual: 14.3 days)
+- IaC scan coverage: Target 100% of Terraform/CloudFormation (actual: 100%)
+- Container vulnerability detection: Target 100% (actual: 100%)
+- Multi-cloud coverage: Target all 3 clouds (actual: AWS, GCP, Azure ✅)
+
+---

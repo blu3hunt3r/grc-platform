@@ -6,3 +6,6 @@
 
 export * from './types';
 export * from './schemas';
+
+// LLM provider abstraction (vendor-free)
+export * from './llm';
