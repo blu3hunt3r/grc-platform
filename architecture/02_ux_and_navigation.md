@@ -642,7 +642,7 @@ export async function getNavigationBadges(userId: string) {
 ```tsx
 // apps/web/src/app/dashboard/layout.tsx
 
-import { currentUser } from '@clerk/nextjs';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Sidebar } from '@/components/navigation/Sidebar';
 import { MobileNav } from '@/components/navigation/MobileNav';
 import { Breadcrumbs } from '@/components/navigation/Breadcrumbs';
@@ -652,9 +652,10 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await currentUser();
+  const supabase = createServerComponentClient({ cookies });
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!user) {
+  if (!session) {
     redirect('/sign-in');
   }
 
@@ -662,7 +663,7 @@ export default async function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-72 lg:flex-col">
-        <Sidebar userId={user.id} />
+        <Sidebar userId={session.user.id} />
       </div>
 
       {/* Main Content */}
@@ -679,7 +680,7 @@ export default async function DashboardLayout({
       </div>
 
       {/* Mobile Nav */}
-      <MobileNav userId={user.id} className="lg:hidden" />
+      <MobileNav userId={session.user.id} className="lg:hidden" />
     </div>
   );
 }
@@ -705,10 +706,16 @@ export function Sidebar({ userId }: { userId: string }) {
   useEffect(() => {
     getNavigationBadges(userId).then(setBadges);
 
-    // WebSocket for real-time updates
-    const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/nav/${userId}`);
-    ws.onmessage = (e) => setBadges(JSON.parse(e.data));
-    return () => ws.close();
+    // Supabase Realtime for live updates
+    const channel = supabase
+      .channel('navigation-badges')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'approvals' },
+        () => getNavigationBadges(userId).then(setBadges)
+      )
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
   }, [userId]);
 
   const tier1 = navigation.filter(n => n.tier === 1);

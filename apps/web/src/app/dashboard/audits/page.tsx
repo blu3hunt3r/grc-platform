@@ -1,7 +1,7 @@
 /**
  * @file dashboard/audits/page.tsx
  * @description Audits listing page showing all audits across companies
- * @architecture Reference: System Prompt - Dashboard-specific components
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (authentication)
@@ -10,10 +10,14 @@
  * Security:
  * - Protected route (Clerk middleware)
  * - Authorization check (user owns companies)
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import { notFound, redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentDbUser } from "@/lib/auth/server";
 import { prisma } from "@grc/database";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,22 +43,10 @@ import Link from "next/link";
  */
 async function getAudits() {
   try {
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      redirect("/sign-in");
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      redirect("/sign-in");
-    }
-
-    // 3. Fetch all audits for user's companies
+    // 2. Fetch all audits for user's companies
     const audits = await prisma.audit.findMany({
       where: {
         company: {

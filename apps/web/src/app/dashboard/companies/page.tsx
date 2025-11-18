@@ -1,7 +1,7 @@
 /**
  * @file dashboard/companies/page.tsx
  * @description Company list page with table view
- * @architecture Reference: System Prompt - Dashboard-specific components
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (authentication)
@@ -9,6 +9,10 @@
  *
  * Security:
  * - Protected route (Clerk middleware)
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import Link from "next/link";
@@ -21,29 +25,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Building2, Plus } from "lucide-react";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentDbUser } from "@/lib/auth/server";
 
 /**
  * Fetch companies for the authenticated user
  */
 async function getCompanies() {
   try {
-    const user = await currentUser();
-    if (!user) {
-      return [];
-    }
+    // Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
     // In a server component, we can directly import and use Prisma
     const { prisma } = await import("@grc/database");
-
-    // Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return [];
-    }
 
     // Fetch companies
     const companies = await prisma.company.findMany({

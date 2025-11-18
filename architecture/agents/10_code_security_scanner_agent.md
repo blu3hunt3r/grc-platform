@@ -1,62 +1,438 @@
-# Agent 10: Code Security Scanner Agent
+# Agent 10: Code Security Orchestration Agent
 
 **Document:** Agent Implementation Specification
 **Agent ID:** 10
-**Version:** 2.0
-**Last Updated:** November 16, 2025
+**Version:** 3.0
+**Last Updated:** November 17, 2025
 
 ---
 
 ## **Role & Identity**
 
-**Title:** Application Security Engineer & Secure SDLC Specialist
-**Experience:** 9+ years in application security and secure development
-**Personality:** Proactive, detail-focused, balances security with developer productivity
+**Title:** Secure SDLC Compliance Engineer & Security Tool Orchestrator
+**Experience:** 9+ years orchestrating enterprise application security programs
+**Personality:** Proactive, detail-focused, balances security with developer productivity, expert at reducing false positives
 
 **Expertise:**
-- Static Application Security Testing (SAST)
-- Dynamic Application Security Testing (DAST)
-- Software Composition Analysis (SCA)
-- Secret detection in code repositories
-- Secure coding standards (OWASP Top 10)
-- Dependency vulnerability management
-- Container security scanning
+- **Security tool orchestration** (Semgrep, Snyk, Gitleaks, CodeQL)
+- **AI-powered vulnerability interpretation** (true positive vs false positive)
+- **SOC 2 control mapping** (CC7.1, CC7.5, CC8.1)
+- **Secure SDLC integration** (pre-commit hooks, PR checks, release gates)
+- **OWASP Top 10 & CWE taxonomy** (vulnerability classification)
+- **Remediation lifecycle management** (detection → fix → validation)
+- **Developer enablement** (actionable guidance, not just alerts)
 
 **Mental Model:**
-This agent thinks like an **AppSec engineer who reviews code for vulnerabilities** before they reach production and understands both security risks and developer workflows.
+This agent thinks like an **AppSec engineer who orchestrates multiple security tools, interprets their findings with AI, and translates technical vulnerabilities into SOC 2 compliance evidence** - not someone who builds scanning tools from scratch.
+
+**Critical Philosophy:**
+```
+WE DO NOT BUILD SCANNERS.
+We integrate with proven tools (Semgrep, Snyk, AWS CodeGuru, GitHub Advanced Security).
+Our value-add is AI INTERPRETATION of scan results in SOC 2 context.
+```
+
+---
+
+## **Tools We Orchestrate**
+
+### **SAST (Static Application Security Testing)**
+- **Semgrep** - Pattern-based code analysis (primary)
+- **CodeQL** - Semantic code analysis (GitHub Advanced Security)
+- **SonarQube** - Code quality + security (if customer uses)
+- **Checkmarx** - Enterprise SAST (if customer uses)
+
+### **SCA (Software Composition Analysis)**
+- **Snyk** - Dependency vulnerability scanning (primary)
+- **npm audit / pip-audit / cargo audit** - Native package scanners
+- **GitHub Dependabot** - Automated dependency updates
+- **OWASP Dependency-Check** - Multi-language SCA
+
+### **Secret Detection**
+- **Gitleaks** - Git secret scanning (primary)
+- **TruffleHog** - Deep history secret scanning
+- **GitHub Secret Scanning** - Native GitHub integration
+- **GitGuardian** - Enterprise secret detection (if customer uses)
+
+### **Container Security**
+- **Trivy** - Container image scanning
+- **Snyk Container** - Docker/Kubernetes security
+- **AWS ECR Scanning** - Native AWS container scanning
+
+### **DAST (Dynamic Application Security Testing)**
+- **OWASP ZAP** - Web app security testing
+- **Burp Suite** - Professional penetration testing (if customer uses)
+- **Nuclei** - Fast vulnerability scanner
+
+---
 
 ## **Responsibilities**
 
 **SOC 2 Controls Owned:**
-- CC7.1: Detection - vulnerability identification
-- CC7.5: Vulnerability management - remediation tracking
-- CC8.1: Change management - secure SDLC
+- **CC7.1:** Detection of security events - Automated vulnerability detection in code
+- **CC7.2:** Security monitoring - Continuous code security monitoring
+- **CC7.5:** Vulnerability management - Tracking remediation from detection to closure
+- **CC8.1:** Change management - Secure SDLC controls (code review, security gates)
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC7.1** | **DETECTION OF SECURITY EVENTS (CODE)**<br>Catch security bugs before production? | Semgrep scans every PR → Finds SQL injection vulnerability → Blocks merge until fixed. Dev writes insecure code → Caught in CI/CD. | Semgrep/Snyk scan reports, vulnerabilities detected, PR block screenshots |
+| **CC7.2** | **SECURITY MONITORING (CODE)**<br>Continuously monitor code security? | Every night: Semgrep + Snyk scan entire codebase. New CVE published → Snyk auto-detects affected dependencies → Alert triggered. | Scheduled scan logs, continuous monitoring dashboards, CVE detection alerts |
+| **CC7.5** | **VULNERABILITY MANAGEMENT (CODE)**<br>Track vulnerabilities from found → fixed? | Snyk finds critical CVE-2025-1234 in Express → Create ticket → Dev updates dependency → Agent verifies fixed → Ticket closed. 15-day remediation SLA enforced. | Vulnerability tracking dashboard, remediation tickets, before/after scans |
+| **CC8.1** | **SECURE SDLC (CHANGE MANAGEMENT)**<br>Security checks in development process? | PR opened → Automated security checks run (SAST, SCA, secrets) → Must pass before merge. Code review includes security approval. | CI/CD security gate configs, PR check results, security review approvals |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure code is secure before it reaches production?"
+
+**Our Answer:**
+> "Agent 10 orchestrates Semgrep, Snyk, and Gitleaks in CI/CD pipelines (CC8.1 secure SDLC), blocking 100% of PRs with high-severity vulnerabilities (CC7.1 detection), continuously monitoring for new CVEs (CC7.2), and tracking remediation with 15-day SLAs (CC7.5). All findings interpreted by Claude AI to reduce false positives from 80% to 13%."
+
+---
 
 **Primary Functions:**
 
-1. **Static Code Analysis**
-   - Scan source code for security vulnerabilities
-   - Detect insecure coding patterns
-   - Identify hardcoded secrets
-   - Flag dangerous functions
+### 1. **Security Tool Orchestration**
+   - **CONFIGURE** scanning tools with SOC 2-relevant rulesets
+   - **SCHEDULE** scans (nightly SAST, continuous SCA, weekly DAST)
+   - **INTEGRATE** tools into CI/CD pipelines (GitHub Actions, GitLab CI)
+   - **NORMALIZE** results from multiple tools into unified format
+   - **DEDUPLICATE** findings across tools (Semgrep + CodeQL may find same issue)
 
-2. **Dependency Vulnerability Scanning**
-   - Check third-party libraries for known CVEs
-   - Monitor for supply chain attacks
-   - Track license compliance
-   - Recommend safe versions
+### 2. **AI-Powered Vulnerability Interpretation**
+   - **ANALYZE** scan results using Claude Sonnet 4.5 for deep understanding
+   - **CLASSIFY** true positives vs false positives (reduce alert fatigue)
+   - **ASSESS** exploitability in context of actual application architecture
+   - **EXPLAIN** findings in business-friendly language (not just CWE numbers)
+   - **RECOMMEND** specific remediation steps (not generic "fix this")
 
-3. **Secret Detection**
-   - Scan for API keys, passwords, tokens in code
-   - Prevent credential leaks
-   - Alert on false positives
-   - Provide remediation guidance
+### 3. **SOC 2 Control Mapping**
+   - **MAP** each vulnerability to SOC 2 controls (CC7.1, CC7.5, CC8.1)
+   - **GENERATE** compliance evidence from scan results
+   - **TRACK** remediation for audit purposes (who fixed, when, verified how)
+   - **REPORT** on secure SDLC maturity for auditors
 
-4. **Security Metrics Tracking**
-   - Vulnerability trends over time
-   - Mean time to remediation (MTTR)
-   - Technical debt accumulation
-   - Developer security awareness
+### 4. **Remediation Lifecycle Management**
+   - **PRIORITIZE** vulnerabilities using risk scoring (severity × exploitability × exposure)
+   - **CREATE** automated fix PRs for low-risk issues (dependency updates)
+   - **ASSIGN** findings to responsible developers with context
+   - **TRACK** remediation progress (MTTR by severity)
+   - **VALIDATE** fixes are effective (re-scan after remediation)
+
+### 5. **Developer Enablement**
+   - **PROVIDE** actionable guidance (not just "SQL injection found")
+   - **INTEGRATE** findings into developer workflow (IDE, PR comments, Slack)
+   - **EDUCATE** on secure coding patterns (prevent future issues)
+   - **MEASURE** developer security awareness over time
+
+---
+
+## **Orchestration Workflow: How We Integrate with Tools**
+
+**Agent does NOT build scanning engines. Agent ORCHESTRATES existing proven tools.**
+
+### **Phase 1: Tool Configuration**
+
+```yaml
+# Agent configures Semgrep with SOC 2-relevant rules
+# Configuration generated automatically based on tech stack discovered
+
+semgrep_config:
+  rules:
+    # CC7.2: Encryption controls
+    - dangerous-crypto:
+        patterns:
+          - pattern: crypto.createCipher($ALGORITHM, ...)
+          - pattern-not: crypto.createCipheriv('aes-256-gcm', ...)
+        message: "Weak encryption detected. SOC 2 CC7.2 requires AES-256-GCM."
+        severity: HIGH
+        metadata:
+          soc2_control: CC7.2
+          cwe: CWE-327
+
+    # CC8.1: Secure SDLC - SQL injection prevention
+    - sql-injection:
+        patterns:
+          - pattern: db.query($USER_INPUT + ...)
+          - pattern-not: db.query($QUERY, [$PARAMS])
+        message: "SQL injection risk. Use parameterized queries per CC8.1."
+        severity: CRITICAL
+        metadata:
+          soc2_control: CC8.1
+          cwe: CWE-89
+          owasp: A03:2021-Injection
+
+    # CC7.1: Secret detection
+    - hardcoded-secrets:
+        patterns:
+          - pattern: const API_KEY = "$VALUE"
+          - pattern-regex: "(AKIA[0-9A-Z]{16})" # AWS keys
+        message: "Hardcoded secret detected. Use secret manager per CC7.1."
+        severity: CRITICAL
+        metadata:
+          soc2_control: CC7.1
+          remediation: "Move to Doppler/AWS Secrets Manager"
+```
+
+### **Phase 2: Tool Execution**
+
+**Agent triggers scans via API/CLI, does NOT re-implement scanning logic:**
+
+```python
+# Example: Agent orchestrates Semgrep scan (NOT building SAST engine)
+
+class CodeSecurityOrchestrationAgent:
+    def run_sast_scan(self, repository_url: str) -> ScanResults:
+        """
+        Orchestrate Semgrep SAST scan.
+        We call Semgrep's API - we do NOT build our own SAST engine.
+        """
+        # Step 1: Configure Semgrep with SOC 2 rules
+        config = self.generate_semgrep_config()
+
+        # Step 2: Trigger scan via Semgrep API (or CLI)
+        results = semgrep.scan(
+            targets=[repository_url],
+            config=config,
+            output_format="json"
+        )
+
+        # Step 3: Normalize results to our schema
+        normalized = self.normalize_results(results, tool="semgrep")
+
+        # Step 4: Store raw results for audit trail
+        self.store_raw_scan_results(results, tool="semgrep")
+
+        return normalized
+
+    def run_sca_scan(self, repository_url: str) -> ScanResults:
+        """
+        Orchestrate Snyk dependency scan.
+        We call Snyk's API - we do NOT build our own CVE database.
+        """
+        # Step 1: Trigger Snyk scan
+        results = snyk.test(
+            project=repository_url,
+            severity_threshold="low",
+            include_dev_deps=True
+        )
+
+        # Step 2: Normalize to common format
+        normalized = self.normalize_results(results, tool="snyk")
+
+        return normalized
+
+    def run_secret_scan(self, repository_url: str) -> ScanResults:
+        """
+        Orchestrate Gitleaks secret detection.
+        We call Gitleaks - we do NOT build secret detection patterns.
+        """
+        # Step 1: Trigger Gitleaks scan
+        results = gitleaks.detect(
+            source=repository_url,
+            config="gitleaks.toml",  # Pre-configured secret patterns
+            verbose=True,
+            redact=True  # Don't expose actual secrets in logs
+        )
+
+        # Step 2: Validate if secrets are real (not examples)
+        validated = self.validate_secrets_with_ai(results)
+
+        return validated
+```
+
+### **Phase 3: AI Interpretation (Our Value-Add)**
+
+**This is where our agent adds value - interpreting tool results with AI:**
+
+```python
+def interpret_vulnerability_with_ai(self, finding: Finding) -> Interpretation:
+    """
+    Use Claude Sonnet 4.5 to interpret if finding is:
+    - True positive vs false positive
+    - Exploitable in customer's specific architecture
+    - Mapped to correct SOC 2 controls
+
+    This is our differentiation - NOT the scanning itself.
+    """
+    prompt = f"""
+    You are a security expert analyzing a potential vulnerability.
+
+    Finding from {finding.tool}:
+    - Type: {finding.vulnerability_type}
+    - Severity: {finding.severity}
+    - Location: {finding.file_path}:{finding.line_number}
+    - Code snippet: {finding.code_snippet}
+
+    Customer context:
+    - Framework: {finding.framework}
+    - Architecture: {finding.architecture}
+    - Deployed on: {finding.cloud_provider}
+
+    Analysis tasks:
+    1. Is this a TRUE POSITIVE or FALSE POSITIVE?
+       - Consider framework-specific patterns (e.g., Next.js middleware)
+       - Check if protective controls exist elsewhere
+
+    2. Is this EXPLOITABLE in customer's specific setup?
+       - Is user input actually reachable?
+       - Are there compensating controls (WAF, input validation)?
+
+    3. Map to SOC 2 controls:
+       - Which control(s) does this impact? (CC7.1, CC7.2, etc.)
+       - Would auditor flag this as control failure?
+
+    4. Provide ACTIONABLE remediation:
+       - Not just "fix SQL injection"
+       - Specific code changes with examples
+
+    5. Risk scoring:
+       - Severity (1-10)
+       - Exploitability (1-10)
+       - Exposure (1-10)
+    """
+
+    interpretation = claude_sonnet_4_5.generate(prompt)
+
+    return Interpretation(
+        is_true_positive=interpretation.is_true_positive,
+        exploitability_analysis=interpretation.exploitability,
+        soc2_controls_impacted=interpretation.controls,
+        remediation_guidance=interpretation.remediation,
+        risk_score=interpretation.risk_score,
+        confidence=interpretation.confidence,
+        reasoning=interpretation.reasoning  # Explain to user WHY
+    )
+```
+
+### **Phase 4: SOC 2 Evidence Generation**
+
+**Convert scan results into audit-ready evidence:**
+
+```python
+def generate_soc2_evidence(self, scan_results: ScanResults) -> Evidence:
+    """
+    Transform tool output into SOC 2 compliance evidence.
+    Auditors don't want raw Semgrep JSON - they want control proof.
+    """
+    evidence = {
+        "control": "CC8.1 - Secure SDLC",
+        "requirement": "Automated security testing in development lifecycle",
+        "evidence_type": "Configuration + Scan Results",
+        "artifacts": [
+            {
+                "type": "tool_configuration",
+                "tool": "Semgrep",
+                "description": "SAST scanning configured in CI/CD",
+                "file": "semgrep_config.yaml",
+                "shows": "Automated detection of OWASP Top 10 vulnerabilities"
+            },
+            {
+                "type": "scan_results",
+                "tool": "Semgrep",
+                "scan_date": scan_results.timestamp,
+                "findings_summary": {
+                    "critical": scan_results.count_by_severity("critical"),
+                    "high": scan_results.count_by_severity("high"),
+                    "all_critical_resolved": scan_results.all_critical_resolved(),
+                },
+                "shows": "No critical vulnerabilities in production code"
+            },
+            {
+                "type": "remediation_tracking",
+                "description": "Vulnerability management process",
+                "shows": "All HIGH+ findings resolved within 7 days (meets policy)"
+            }
+        ],
+        "auditor_narrative": f"""
+        Control CC8.1 (Secure SDLC) requires automated security testing.
+
+        Implementation:
+        - SAST scanning (Semgrep) runs on every PR and nightly
+        - SCA scanning (Snyk) runs daily to detect dependency CVEs
+        - Secret scanning (Gitleaks) prevents credential leaks
+
+        Evidence:
+        - Configuration files show comprehensive security rules
+        - Scan results from {scan_results.period} show active monitoring
+        - All CRITICAL findings resolved before production deployment
+        - Mean time to remediation: {scan_results.mttr} (meets 7-day SLA)
+
+        Conclusion: Control operating effectively.
+        """
+    }
+
+    return evidence
+```
+
+### **Phase 5: Remediation Lifecycle Tracking**
+
+**Track from detection → assignment → fix → verification:**
+
+```python
+def track_vulnerability_lifecycle(self, vulnerability: Vulnerability):
+    """
+    Complete lifecycle management - not just detection.
+    This is what auditors want to see for CC7.5 (Vulnerability Management).
+    """
+    # 1. Detection (tool finds issue)
+    detected_at = vulnerability.first_seen
+
+    # 2. AI Interpretation (reduce false positives)
+    interpretation = self.interpret_vulnerability_with_ai(vulnerability)
+    if not interpretation.is_true_positive:
+        return self.mark_as_false_positive(vulnerability, interpretation.reasoning)
+
+    # 3. Prioritization (risk-based)
+    priority = self.calculate_priority(interpretation.risk_score)
+    sla = self.get_remediation_sla(priority)  # CRITICAL: 24h, HIGH: 7d
+
+    # 4. Assignment (to responsible developer)
+    assigned_to = self.find_code_owner(vulnerability.file_path)
+    self.create_ticket(
+        assignee=assigned_to,
+        title=f"[SECURITY] {vulnerability.title}",
+        description=interpretation.remediation_guidance,  # AI-generated
+        labels=["security", priority, f"soc2-{interpretation.controls}"],
+        due_date=datetime.now() + sla
+    )
+
+    # 5. Automated Fix (for simple issues like dependency updates)
+    if vulnerability.is_auto_fixable:
+        pr = self.create_fix_pr(vulnerability, interpretation.remediation_guidance)
+        self.request_review(pr, assigned_to)
+
+    # 6. Verification (re-scan after fix)
+    def on_fix_merged(pr_merged_event):
+        # Trigger re-scan to confirm vulnerability is gone
+        rescan_results = self.run_targeted_scan(vulnerability.file_path)
+        if vulnerability.id not in rescan_results.findings:
+            self.mark_as_resolved(
+                vulnerability,
+                resolved_by=pr_merged_event.author,
+                resolved_at=pr_merged_event.merged_at,
+                verification="Re-scan confirmed vulnerability no longer present"
+            )
+
+    # 7. Audit Trail (for SOC 2)
+    self.record_audit_trail({
+        "vulnerability_id": vulnerability.id,
+        "detected_at": detected_at,
+        "tool": vulnerability.source_tool,
+        "interpreted_at": interpretation.timestamp,
+        "ai_confidence": interpretation.confidence,
+        "assigned_to": assigned_to,
+        "sla": sla,
+        "resolved_at": None,  # Updated when fixed
+        "soc2_control": interpretation.controls,
+        "evidence_package": "vulnerability_management_" + vulnerability.id
+    })
+```
+
+---
 
 ## **Decision-Making: Vulnerability Prioritization**
 
@@ -580,13 +956,336 @@ Real-world example:
  Using all three provides defense in depth."
 ```
 
-## **Edge Cases**
+## **Edge Cases: Orchestration-Specific Scenarios**
 
-[Content continues with the three detailed edge cases from the original document: Vulnerable Library with No Fix Available, Secret in Git History, and False Positive vs. Real Issue Debate]
+### **Edge Case 1: Security Tool API Failure**
+
+```
+Problem: Snyk API is down during scheduled scan
+
+Agent Response:
+├─ Detection: API returns 503 Service Unavailable
+├─ Immediate action: Don't fail the build
+│   └─ Rationale: Blocking all deployments due to vendor API issue is bad
+│
+├─ Fallback strategy:
+│   ├─ Option 1: Use cached scan results (if <24 hours old)
+│   ├─ Option 2: Fall back to npm audit (less comprehensive but available)
+│   ├─ Option 3: Skip SCA for this build, flag for manual review
+│   └─ Decision: Use Option 1 if available, else Option 2
+│
+├─ Alert stakeholders:
+│   ├─ Notify Security team: "Snyk API down, using fallback"
+│   ├─ Create incident ticket: Track when service restored
+│   └─ Document in audit trail: Explain why scan result is cached
+│
+└─ SOC 2 compliance:
+    ├─ Control CC7.5 requires vulnerability scanning
+    ├─ Compensating control: Used alternate scanning method
+    ├─ Evidence: Documented API outage + fallback procedure
+    └─ Auditor narrative: "When primary tool unavailable, backup process ensures continued monitoring"
+```
+
+### **Edge Case 2: Tool Produces Conflicting Results**
+
+```
+Problem: Semgrep says "SQL injection" but CodeQL says "safe"
+
+Agent Analysis:
+├─ Finding: User search endpoint flagged by Semgrep, not by CodeQL
+├─ Tool comparison:
+│   ├─ Semgrep (pattern-based): Matches string concatenation pattern
+│   ├─ CodeQL (semantic): Understands data flow, sees input sanitization
+│   └─ Conflict: Different analysis methodologies
+│
+├─ AI arbitration (our value-add):
+│   ├─ Read actual code with Claude Sonnet 4.5
+│   ├─ Analyze: Is there input sanitization?
+│   ├─ Code review shows: express-validator middleware sanitizes input
+│   ├─ Semgrep limitation: Doesn't understand middleware patterns
+│   └─ CodeQL correct: Input sanitized before query
+│
+├─ Resolution:
+│   ├─ Mark as FALSE POSITIVE in Semgrep
+│   ├─ Add suppression comment in code
+│   ├─ Update Semgrep config: Ignore this specific pattern in Express apps
+│   └─ Trust CodeQL (semantic analysis) > Semgrep (pattern matching)
+│
+└─ Learning:
+    ├─ Add to knowledge base: "Express-validator middleware prevents injection"
+    ├─ Improve future scans: Teach Semgrep about this pattern
+    └─ Document decision: Why we trusted one tool over another (audit trail)
+```
+
+### **Edge Case 3: Customer Wants Different Security Tool**
+
+```
+Problem: Customer already has Checkmarx license, doesn't want Semgrep
+
+Agent Response (flexibility is key):
+├─ Recognize: We're tool-agnostic
+├─ Customer preference: Checkmarx SAST (enterprise tool)
+│
+├─ Agent adaptation:
+│   ├─ Keep orchestration layer unchanged
+│   ├─ Swap tool integration: Semgrep → Checkmarx
+│   ├─ Update connector: Use Checkmarx API instead of Semgrep
+│   ├─ Normalize results: Convert Checkmarx XML to our schema
+│   └─ Everything else identical: AI interpretation, SOC 2 mapping
+│
+├─ Configuration change:
+│   ```yaml
+│   sast_provider: "checkmarx"  # Was "semgrep"
+│   checkmarx_config:
+│     api_url: "https://customer.checkmarx.com"
+│     project_id: "customer-web-app"
+│     preset: "OWASP Top 10"
+│   ```
+│
+└─ Benefits of orchestration approach:
+    ├─ Tool-agnostic architecture: Swap tools without rewrite
+    ├─ Customer keeps existing investment: Use their Checkmarx license
+    ├─ Same AI interpretation: Reduce false positives regardless of tool
+    └─ Same SOC 2 mapping: Evidence generation works with any tool
+```
+
+### **Edge Case 4: Zero-Day Vulnerability Discovered Mid-Audit**
+
+```
+Scenario: Log4Shell discovered during SOC 2 audit period
+
+Agent Response (real-world December 2021 scenario):
+├─ Detection: CVE-2021-44228 published (Log4j RCE)
+├─ Urgency: CRITICAL - actively exploited in wild
+│
+├─ Immediate actions (automated):
+│   ├─ 1. Emergency SCA scan of all repositories (NOW)
+│   │   └─ Question: Do we use Log4j anywhere?
+│   │
+│   ├─ 2. Check all dependency trees (including transitive)
+│   │   ├─ Direct dependency: log4j-core? Check pom.xml / build.gradle
+│   │   └─ Transitive: Any package depends on log4j? Check recursively
+│   │
+│   ├─ 3. Runtime detection (Infrastructure Scanner Agent)
+│   │   └─ Scan running containers for log4j JAR files
+│   │
+│   └─ 4. Alert EVERYONE (P0 incident)
+│       ├─ Security team: PagerDuty high urgency
+│       ├─ Engineering leads: Slack + email
+│       ├─ Incident Response Agent: Auto-create incident
+│       └─ Audit Coordinator Agent: Notify auditor proactively
+│
+├─ Results:
+│   ├─ Found: log4j 2.14.1 in logging-service (vulnerable)
+│   ├─ Exposure: Backend API (internet-facing) ⚠️
+│   ├─ Exploitability: CRITICAL (trivial RCE)
+│   └─ Blast radius: ALL customer data at risk
+│
+├─ Remediation (emergency patch):
+│   ├─ Create hotfix branch
+│   ├─ Update to log4j 2.17.1 (patched version)
+│   ├─ Auto-generate PR with detailed explanation
+│   ├─ Mark as EMERGENCY (bypass normal review SLA)
+│   ├─ Deploy to production ASAP (after smoke tests)
+│   └─ Validate: Re-scan confirms vulnerability gone
+│
+├─ Audit implications:
+│   ├─ Discovery: Vulnerability existed during audit period ⚠️
+│   ├─ Response time: Patched within 4 hours ✅ (industry: 24-48h)
+│   ├─ Detection: Automated scanning caught it immediately ✅
+│   ├─ Process: Followed incident response playbook ✅
+│   └─ Evidence: Full timeline documented (detection → patch → verification)
+│
+└─ Auditor discussion:
+    "Log4Shell was discovered mid-audit. Our automated vulnerability
+     scanning detected the issue within 1 hour of CVE publication.
+     Remediation completed within 4 hours (well below industry standard).
+     This demonstrates CC7.5 (Vulnerability Management) is operating
+     effectively even for zero-day threats.
+
+     Evidence:
+     - SCA scan logs (showing immediate detection)
+     - Incident timeline (4-hour response)
+     - Patch verification (re-scan confirms fix)
+     - No exploitation detected (WAF logs reviewed)
+
+     Control assessment: EXCEEDS EXPECTATIONS"
+```
+
+### **Edge Case 5: Development Team Bypasses Security Checks**
+
+```
+Problem: Developers push directly to main branch, skipping PR checks
+
+Discovery:
+├─ Normal flow: PR → SAST scan → Review → Merge
+├─ Actual: Developer commits directly to main (bypass)
+├─ Detection: Agent monitors git push events
+│   └─ Sees: Commit to main without scan results
+│
+├─ Agent response:
+│   ├─ 1. Run retroactive scan (scan main branch after-the-fact)
+│   ├─ 2. Alert Security team: "Security checks bypassed"
+│   ├─ 3. Notify developer: "Bypassing security scans violates policy"
+│   ├─ 4. Create incident ticket: Track policy violation
+│   └─ 5. If vulnerabilities found: Emergency revert or hotfix
+│
+├─ Root cause analysis:
+│   ├─ Why did bypass happen? Developer has admin access to repo
+│   ├─ Control gap: GitHub branch protection not enforced
+│   └─ Recommendation: Enable branch protection (require PR + checks)
+│
+├─ Remediation:
+│   ├─ Technical: Enable GitHub branch protection rules
+│   │   ├─ Require PR before merge to main
+│   │   ├─ Require SAST + SCA checks pass
+│   │   ├─ Require 1+ approvals
+│   │   └─ Restrict push access (admins only for emergencies)
+│   │
+│   ├─ Process: Update secure SDLC policy
+│   │   └─ Document when bypass is allowed (true emergencies only)
+│   │
+│   └─ Evidence for SOC 2:
+│       ├─ Detected bypass through monitoring ✅
+│       ├─ Investigated and remediated ✅
+│       ├─ Implemented preventive control ✅
+│       └─ Shows: CC8.1 (Change Management) enforcement
+│
+└─ Auditor narrative:
+    "One instance of security check bypass detected via automated monitoring.
+     Agent identified issue, alerted stakeholders, and recommended technical
+     controls. GitHub branch protection now enforced. This demonstrates
+     detective controls (monitoring) + corrective controls (remediation)
+     working as designed per CC8.1."
+```
+
+### **Edge Case 6: False Positive Overload (Alert Fatigue)**
+
+```
+Problem: Semgrep produces 500 findings, 80% false positives
+
+Agent Analysis:
+├─ Symptom: Developers ignore security findings (alert fatigue)
+├─ Root cause: Tool misconfiguration (too aggressive rules)
+├─ Impact: Real vulnerabilities get missed in the noise
+│
+├─ Agent intervention (AI value-add):
+│   ├─ 1. Analyze all 500 findings with Claude Sonnet 4.5
+│   │   ├─ Question: Which are TRUE positives?
+│   │   ├─ Code context: Read surrounding code to determine
+│   │   ├─ Framework awareness: Understand Next.js / Express patterns
+│   │   └─ Result: 97 true positives, 403 false positives
+│   │
+│   ├─ 2. Classify false positive patterns:
+│   │   ├─ Pattern 1: Semgrep flags all db.query() but we use Prisma (safe ORM)
+│   │   ├─ Pattern 2: Flags eval() in test files (not production code)
+│   │   ├─ Pattern 3: Flags innerHTML but React escapes by default
+│   │   └─ ... (10 more patterns)
+│   │
+│   ├─ 3. Auto-tune Semgrep configuration:
+│   │   ```yaml
+│   │   rules:
+│   │     - id: sql-injection
+│   │       patterns:
+│   │         - pattern: db.query($INPUT)
+│   │         - pattern-not-inside: prisma.*  # Exclude Prisma
+│   │         - pattern-not-inside: test/**  # Exclude tests
+│   │   ```
+│   │
+│   └─ 4. Re-scan with tuned config:
+│       ├─ New findings: 112 total
+│       ├─ False positives: 15 (13%)  ← Much better!
+│       └─ Developer satisfaction: Dramatically improved
+│
+├─ Continuous learning:
+│   ├─ Track developer feedback: "Was this finding helpful?"
+│   ├─ Learn from dismissals: If 10 devs dismiss same pattern → likely false positive
+│   ├─ Update rules automatically: Reduce noise over time
+│   └─ Measure: False positive rate trending downward
+│
+└─ SOC 2 benefit:
+    ├─ Developers actually fix real issues (not buried in noise)
+    ├─ Faster remediation (clear signal vs noise)
+    ├─ Better compliance posture (CC7.5 effective when findings are actionable)
+    └─ Evidence: Decreasing MTTR + increasing developer engagement
+```
+
+---
 
 ## **Cross-Agent Communication**
 
-[Content includes the detailed workflows for coordination with Change Management Agent and Infrastructure Scanner Agent]
+### **Coordination with Change Management Agent (Agent 6)**
+
+```
+Workflow: Security findings impact change approval
+
+Scenario: Developer requests production deployment
+
+Code Security Agent:
+├─ Triggered by: Change Management Agent requests security assessment
+├─ Action: Scan code changes in deployment
+├─ Findings:
+│   ├─ CRITICAL: 0
+│   ├─ HIGH: 2 (dependency vulnerabilities)
+│   ├─ MEDIUM: 8
+│   └─ LOW: 15
+│
+├─ Risk assessment:
+│   ├─ HIGH findings exploitable? Yes (analyze with AI)
+│   ├─ In scope of change? Yes (dependencies updated in this release)
+│   └─ Recommendation: BLOCK deployment until HIGH fixed
+│
+└─ Response to Change Management Agent:
+    {
+      "deployment_id": "deploy-2025-11-17-001",
+      "security_assessment": "BLOCK",
+      "reason": "2 HIGH severity vulnerabilities in deployment",
+      "findings": [
+        {
+          "severity": "HIGH",
+          "issue": "lodash prototype pollution (CVE-2020-8203)",
+          "exploitable": true,
+          "soc2_control": "CC7.5",
+          "remediation": "Update lodash to 4.17.21",
+          "estimated_fix_time": "5 minutes"
+        }
+      ],
+      "recommendation": "Fix HIGH findings before deployment (ETA: 10 min)"
+    }
+
+Change Management Agent receives → Blocks deployment → Notifies developer
+Developer fixes → Re-scans → Code Security Agent approves → Deployment proceeds
+```
+
+### **Coordination with Infrastructure Scanner Agent (Agent 11)**
+
+```
+Workflow: Container vulnerability detected in runtime
+
+Code Security Agent responsibility: Scan container IMAGES (Dockerfile, base images)
+Infrastructure Scanner Agent responsibility: Scan RUNNING containers in production
+
+Handoff scenario:
+1. Code Security Agent scans Dockerfile:
+   ├─ Base image: node:16-alpine
+   ├─ Finding: node:16 has known CVE in OpenSSL
+   ├─ Recommendation: Update to node:18-alpine
+   └─ Create PR with fix
+
+2. Infrastructure Scanner Agent detects same issue in running containers:
+   ├─ Scans ECS tasks: 15 containers running node:16
+   ├─ Cross-reference: Code Security Agent already flagged this
+   ├─ Status: Fix PR pending (don't duplicate alert)
+   └─ Action: Monitor PR merge → Verify new containers deployed
+
+3. Verification loop:
+   ├─ PR merged → New image built → Deployed to production
+   ├─ Infrastructure Scanner rescans: Old containers gone ✅
+   ├─ Both agents confirm: Vulnerability remediated
+   └─ Evidence package: Shows detection → fix → verification (complete lifecycle)
+```
+
+---
 
 ## **Success Metrics**
 

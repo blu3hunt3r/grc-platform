@@ -103,7 +103,7 @@ export async function generateTextWithFallback(options: GenerateTextOptions) {
       system: systemPrompt,
       temperature,
       maxTokens,
-    });
+    } as any);
 
     return {
       text: result.text,
@@ -121,7 +121,7 @@ export async function generateTextWithFallback(options: GenerateTextOptions) {
         system: systemPrompt,
         temperature,
         maxTokens,
-      });
+      } as any);
 
       return {
         text: result.text,
@@ -154,7 +154,7 @@ export async function generateObjectWithFallback<T>(options: GenerateTextOptions
       schema,
       temperature,
       maxTokens,
-    });
+    } as any);
 
     return {
       object: result.object,
@@ -203,7 +203,7 @@ export async function streamTextWithFallback(options: GenerateTextOptions) {
       system: systemPrompt,
       temperature,
       maxTokens,
-    });
+    } as any);
   } catch (error: any) {
     console.warn(`[LLM] Primary model failed (${provider}), trying fallback:`, error.message);
 
@@ -213,7 +213,7 @@ export async function streamTextWithFallback(options: GenerateTextOptions) {
       system: systemPrompt,
       temperature,
       maxTokens,
-    });
+    } as any);
   }
 }
 

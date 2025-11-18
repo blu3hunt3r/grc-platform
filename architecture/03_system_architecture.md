@@ -41,7 +41,7 @@
 ┌─────────────────────────────────────────────────────────────────┐
 │                    API LAYER (Next.js API Routes)               │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  tRPC Router │  │  REST APIs   │  │  WebSocket   │          │
+│  │  tRPC Router │  │  REST APIs   │  │  Realtime    │          │
 │  │  (Type-safe) │  │  (External)  │  │  (Real-time) │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
 └─────────────────────────────────────────────────────────────────┘
@@ -1764,7 +1764,7 @@ This is **Retrieval Augmented Generation (RAG)** - gives AI access to specific k
 2. **Progress Tracking**: Real-time updates
    - Evidence collection is 67% complete
    - Stored in Redis for instant access
-   - WebSocket reads from Redis to update UI
+   - Supabase Realtime broadcasts changes to UI
 
 3. **Cache**: Expensive queries
    - List of all resources (queried frequently)
@@ -2088,7 +2088,7 @@ When user navigates to different audit:
 
 **The Reconnection Logic:**
 
-1. **Detect Disconnect**: WebSocket `onclose` event fires
+1. **Detect Disconnect**: Supabase client `CLOSED` event fires
 2. **Attempt Reconnect**: Every 2 seconds, try to reconnect
 3. **Exponential Backoff**: If repeated failures, wait longer (2s → 4s → 8s → max 30s)
 4. **Sync State**: On reconnect, request missed events
@@ -2611,7 +2611,7 @@ Analyze this user: "John Smith, SSN: [REDACTED], works as Engineer"
 **In Transit**: TLS 1.3
 - All database connections encrypted
 - All API calls over HTTPS
-- All WebSocket connections secure
+- All Supabase Realtime connections secure
 
 #### **Protection 3: Data Classification**
 
@@ -2717,7 +2717,8 @@ We monitor logs for:
 - **Temporal Workers**: Add more workers as needed
 
 **Stateful Components** (harder to scale):
-- **PostgreSQL**: Neon (managed, auto-scaling)
+- **PostgreSQL**: Supabase PostgreSQL (managed, auto-scaling with PgBouncer connection pooling)
+  - **Migration Note**: Migrated from Neon on November 17, 2025
 - **Redis**: Upstash (serverless Redis)
 - **Temporal Server**: Temporal Cloud (managed)
 
@@ -2879,7 +2880,7 @@ GET /evidence?ids=1,2,3
    - GitHub (repos, branch protection, access)
    - Google Workspace (drives, docs, sharing settings)
 8. Discovery Agent publishes progress via Redis
-9. WebSocket sends updates to UI
+9. Supabase Realtime broadcasts updates to UI
 10. User sees: "Found 127 AWS resources, 47 Okta users, 23 GitHub repos"
 11. Discovery Agent stores results in `resources` table
 12. Workflow creates approval request

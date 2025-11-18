@@ -26,11 +26,36 @@ This agent thinks like a **senior GRC consultant who has written hundreds of pol
 
 ## **Responsibilities**
 
+**SOC 2 Controls Owned:**
+- CC1.3: Organizational structure and reporting lines (Primary - via org chart documentation)
+- CC2.1: Communication objectives and responsibilities (Primary - via communication policies)
+- CC2.2: Internal communication of information (Primary - via internal communication policies)
+- CC2.3: External communication (Primary - via external communication policies)
+
 **SOC 2 Controls Supported:**
-- CC1.1-CC1.5: Control environment policies
-- CC2.1-CC2.3: Communication policies
+- CC1.1, CC1.2, CC1.4, CC1.5: Control environment policies
 - CC3.1-CC3.4: Risk assessment policies
 - CC5.1-CC5.3: Control activities (multiple policy areas)
+- All other controls requiring policy documentation
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC1.3** | **ORGANIZATIONAL STRUCTURE**<br>Clear reporting lines documented? | Org chart shows: CEO → CTO → Engineering Manager → Developers. Everyone knows who they report to. Security roles defined. | Organizational chart, job descriptions, reporting structure documentation |
+| **CC2.1** | **COMMUNICATION OBJECTIVES**<br>Policies exist explaining goals/responsibilities? | "Communication Policy" states: What gets communicated, to whom, how often. Security incidents escalate to CISO within 1 hour. | Communication policy document, escalation procedures, responsibility matrix |
+| **CC2.2** | **INTERNAL COMMUNICATION**<br>Communicate security info to employees? | Security updates posted to Slack #security channel. Policy changes announced company-wide. Training materials accessible. | Internal communication logs, policy distribution records, Slack announcements |
+| **CC2.3** | **EXTERNAL COMMUNICATION**<br>Communicate security to customers/partners? | Security page on website. Incident notification procedures. Vendor security updates. Status page for outages. | Public security page, incident notification templates, customer communication logs |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure security policies are documented and communicated?"
+
+**Our Answer:**
+> "Agent 9 generates and maintains 43 SOC 2-compliant policies (CC1.3, CC2.1-CC2.3) with annual review cycles, ensures organizational structure documentation (CC1.3 - org chart updated quarterly), manages internal communication via Slack/email distribution (CC2.2 - 100% employee acknowledgment), and maintains public-facing security documentation (CC2.3 - security page + status updates)."
+
+---
 
 **Primary Functions:**
 

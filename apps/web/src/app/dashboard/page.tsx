@@ -1,14 +1,18 @@
 /**
  * @file dashboard/page.tsx
  * @description Dashboard home page with stats and overview
- * @architecture Reference: System Prompt - Dashboard-specific components
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (auth)
  * - Prisma (database)
  *
  * Security:
- * - Protected route via middleware
+ * - Protected route via Clerk middleware
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import { currentUser } from "@clerk/nextjs/server";
@@ -19,13 +23,14 @@ import { Button } from "@/components/ui/button";
 
 export default async function DashboardPage() {
   const user = await currentUser();
+  const firstName = user?.firstName || user?.fullName?.split(' ')[0] || "there";
 
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user?.firstName || "there"}!
+          Welcome back, {firstName}!
         </h1>
         <p className="text-muted-foreground mt-2">
           Here&apos;s an overview of your compliance automation platform
@@ -122,7 +127,7 @@ export default async function DashboardPage() {
             <div>
               <h3 className="font-semibold">View AI Agents</h3>
               <p className="text-sm text-muted-foreground">
-                Monitor your 16+ specialized AI agents
+                Monitor your 15 specialized AI agents
               </p>
             </div>
             <Button disabled>Coming Soon</Button>

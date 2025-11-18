@@ -12,7 +12,7 @@
 
 1. [Introduction: The Agent Philosophy](#1-introduction)
 2. [Agent Design Principles](#2-design-principles)
-3. [The 16 Specialized Agents: Overview & Index](#3-agents)
+3. [The 15 Specialized Agents: Overview & Index](#3-agents)
 4. [Agent Coordination Patterns](#4-coordination)
 5. [Learning & Continuous Improvement](#5-learning)
 6. [Quality Assurance & Validation](#6-validation)
@@ -351,7 +351,7 @@ Week 3:
 
 ## **3. THE 16 SPECIALIZED AGENTS: OVERVIEW & INDEX** {#3-agents}
 
-This section provides a quick overview of all 16 agents with links to their detailed specifications. Each agent is a specialized expert focused on one specific domain within GRC compliance.
+This section provides a quick overview of all 15 specialized agents with links to their detailed specifications. Each agent is a specialized expert focused on one specific domain within GRC compliance.
 
 ---
 
@@ -533,7 +533,7 @@ The Incident Response Agent is the first responder when security incidents occur
 
 ## **4. AGENT COORDINATION PATTERNS** {#4-coordination}
 
-The 16 agents work together using four primary coordination patterns:
+The 15 specialized agents work together using four primary coordination patterns:
 
 ### **Pattern 1: Sequential Dependencies**
 
@@ -698,6 +698,6 @@ Learnings are stored in a vector database (Pinecone) for RAG:
 
 **Document Status:** ✅ OVERVIEW COMPLETE
 **Purpose:** Navigation and architecture overview
-**Coverage:** Overview of all 16 agents + coordination patterns
+**Coverage:** Overview of all 15 specialized agents + coordination patterns
 **Detailed Specs:** See individual agent files in `agents/` folder
 **Completion:** 100%

@@ -1,7 +1,7 @@
 /**
  * @file api/audits/route.ts
  * @description API routes for audit management (list, create)
- * @architecture Reference: System Prompt - API Layer with Next.js API Routes
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (authentication)
@@ -12,10 +12,14 @@
  * - Protected route (Clerk middleware)
  * - Authorization check (user owns company)
  * - Input validation with Zod
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentDbUser } from "@/lib/auth/server";
 import { prisma } from "@grc/database";
 import { z } from "zod";
 
@@ -40,32 +44,14 @@ const CreateAuditSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
-    }
-
-    // 3. Get query parameters
+    // 2. Get query parameters
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get("companyId");
 
-    // 4. Build query
+    // 3. Build query
     const where: any = {
       company: {
         createdById: dbUser.id,
@@ -77,7 +63,7 @@ export async function GET(request: NextRequest) {
       where.companyId = companyId;
     }
 
-    // 5. Fetch audits
+    // 4. Fetch audits
     const audits = await prisma.audit.findMany({
       where,
       include: {
@@ -122,28 +108,10 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
-    }
-
-    // 3. Parse and validate request body
+    // 2. Parse and validate request body
     const body = await request.json();
     const validationResult = CreateAuditSchema.safeParse(body);
 
@@ -159,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     const data = validationResult.data;
 
-    // 4. Verify user owns the company
+    // 3. Verify user owns the company
     const company = await prisma.company.findFirst({
       where: {
         id: data.companyId,
@@ -175,7 +143,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 5. Create audit
+    // 4. Create audit
     const audit = await prisma.audit.create({
       data: {
         companyId: data.companyId,

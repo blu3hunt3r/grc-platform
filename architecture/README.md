@@ -75,7 +75,7 @@ This architecture documentation is organized into **6 focused parts** covering e
 
 **Contents:**
 - **System Overview** - All layers from UI to database
-- **Multi-Agent Architecture** - 16+ specialized agents
+- **Multi-Agent Architecture** - 15 specialized agents
 - **Orchestration Layer** - Temporal + LangGraph + CrewAI integration
 - **Vision-Based Evidence** - Playwright + Browserbase + Claude Vision
 - **Agent Communication Patterns** - How agents coordinate
@@ -101,18 +101,17 @@ This architecture documentation is organized into **6 focused parts** covering e
 
 **Contents:**
 - **Agent Design Principles** - Single responsibility, expertise via context
-- **Complete Agent Specifications** - All 16+ agents in detail:
+- **Complete Agent Specifications** - All 15 agents in detail:
   - Orchestrator Agent
   - Discovery Agent
   - Framework Expert Agent
   - Access Control Agent
-  - Infrastructure Security Agent
+  - Infrastructure Security & CSPM Agent
   - Change Management Agent
   - Vendor Risk Agent
   - HR Compliance Agent
   - Policy Generation Agent
   - Code Security Scanner Agent
-  - Infrastructure Scanner Agent
   - Compliance Copilot Agent
   - Questionnaire Automation Agent
   - Evidence Management Agent

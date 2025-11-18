@@ -1,18 +1,19 @@
 /**
  * @file dashboard/layout.tsx
  * @description Dashboard layout with navigation
- * @architecture Reference: System Prompt - Frontend Stack (Next.js 14 App Router)
+ * @architecture Reference: Part 6 - Security & Authentication
+ * Migrated from Clerk to Supabase Auth on November 17, 2025
  *
  * Dependencies:
- * - Clerk authentication
+ * - Supabase authentication
  * - Next.js App Router
  *
  * Security:
- * - Protected route (Clerk middleware)
+ * - Protected route (Supabase middleware)
  */
 
 import Link from "next/link";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/auth/user-button";
 import { Building2, LayoutDashboard, FileText, Shield } from "lucide-react";
 
 export default function DashboardLayout({

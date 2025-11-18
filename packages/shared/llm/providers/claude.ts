@@ -49,12 +49,12 @@ export class ClaudeProvider extends BaseProvider {
         system: task.systemPrompt,
         temperature: task.temperature ?? 0.7,
         maxTokens: task.maxTokens ?? 4096,
-      });
+      } as any);
 
       const latency = Date.now() - startTime;
       const usage = this.calculateUsage(
-        result.usage.promptTokens,
-        result.usage.completionTokens
+        (result.usage as any).promptTokens || (result.usage as any).inputTokens || 0,
+        (result.usage as any).completionTokens || (result.usage as any).outputTokens || 0
       );
 
       return {
@@ -89,16 +89,16 @@ export class ClaudeProvider extends BaseProvider {
         system: task.systemPrompt,
         temperature: task.temperature ?? 0.7,
         maxTokens: task.maxTokens ?? 4096,
-      });
+      } as any);
 
       const latency = Date.now() - startTime;
       const usage = this.calculateUsage(
-        result.usage.promptTokens,
-        result.usage.completionTokens
+        (result.usage as any).promptTokens || (result.usage as any).inputTokens || 0,
+        (result.usage as any).completionTokens || (result.usage as any).outputTokens || 0
       );
 
       return {
-        result: result.object,
+        result: result.object as T,
         provider: this.config.provider,
         model: modelName,
         usage,
@@ -121,7 +121,7 @@ export class ClaudeProvider extends BaseProvider {
         model,
         prompt: 'Health check',
         maxTokens: 10,
-      });
+      } as any);
 
       return true;
     } catch (error) {

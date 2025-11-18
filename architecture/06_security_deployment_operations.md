@@ -329,16 +329,19 @@ Event Sources:
 
 ### **2.1 Authentication Architecture**
 
+**Migration Note:** Migrated from Clerk to Supabase Auth on November 17, 2025 for unified backend architecture.
+
 **Dual Authentication Strategy:**
 
 We use **two authentication providers** to serve different customer segments:
 
-1. **Clerk** (for SMB & Mid-Market)
+1. **Supabase Auth** (for SMB & Mid-Market)
    - Magic links (passwordless)
-   - Social login (Google, Microsoft)
+   - Social login (Google, GitHub, Azure AD)
    - Email/password with MFA
-   - Simple onboarding flow
-   - Cost: $25/month for 1,000 MAU
+   - Phone authentication
+   - Row Level Security (RLS) integration
+   - Cost: Included with Supabase Pro plan
 
 2. **WorkOS** (for Enterprise)
    - SAML 2.0 SSO
@@ -375,13 +378,13 @@ We use **two authentication providers** to serve different customer segments:
 └────────────────────────────────────────────────────────────────┘
                          ↓
 ┌────────────────────────────────────────────────────────────────┐
-│ STEP 3a: Clerk Authentication (SMB)                            │
+│ STEP 3a: Supabase Auth Authentication (SMB)                    │
 │ ├─ User enters email                                           │
-│ ├─ Clerk sends magic link to email                             │
+│ ├─ Supabase Auth sends magic link to email                     │
 │ ├─ User clicks link                                            │
-│ ├─ Clerk verifies link validity                                │
-│ ├─ Clerk creates session                                       │
-│ └─ Clerk redirects back with session token                     │
+│ ├─ Supabase Auth verifies link validity                        │
+│ ├─ Supabase Auth creates session                               │
+│ └─ Supabase Auth redirects back with session token             │
 └────────────────────────────────────────────────────────────────┘
                    OR
 ┌────────────────────────────────────────────────────────────────┐
@@ -398,14 +401,14 @@ We use **two authentication providers** to serve different customer segments:
                          ↓
 ┌────────────────────────────────────────────────────────────────┐
 │ STEP 4: Session Creation in Our App                            │
-│ ├─ Receive auth token from Clerk/WorkOS                        │
-│ ├─ Verify token signature                                      │
-│ ├─ Extract user info (email, name, org)                        │
-│ ├─ Check if user exists in our database                        │
+│ ├─ Receive auth token from Supabase Auth/WorkOS                │
+│ ├─ Verify token signature (JWT verification)                   │
+│ ├─ Extract user info (email, name, metadata)                   │
+│ ├─ Check if user exists in our database via RLS query          │
 │ ├─ IF NEW: Create user record (with default role)              │
 │ ├─ IF EXISTING: Update last_login timestamp                    │
-│ ├─ Load user's organization and permissions                    │
-│ ├─ Create our own JWT with user_id + org_id + role             │
+│ ├─ Load user's organization and permissions via RLS            │
+│ ├─ Supabase manages JWT with user_id + org_id + role claims    │
 │ ├─ Set secure HTTP-only cookie (7-day expiry)                  │
 │ └─ Redirect to app dashboard                                   │
 └────────────────────────────────────────────────────────────────┘
@@ -435,18 +438,22 @@ We use **two authentication providers** to serve different customer segments:
 | **Concurrent Sessions** | Allowed (max 5 devices) | Support mobile + desktop |
 | **Session Revocation** | Immediate (version in DB) | Instant logout on password change |
 
-**JWT Payload:**
+**JWT Payload (Supabase Auth):**
 
 ```json
 {
-  "sub": "user_2abc123def456",           // User ID (from Clerk/WorkOS)
-  "org_id": "org_xyz789",                 // Organization ID
-  "role": "compliance_manager",           // Primary role
-  "permissions": [                        // Cached permissions (for performance)
+  "sub": "user_2abc123def456",           // User ID (from Supabase Auth)
+  "org_id": "org_xyz789",                 // Organization ID (custom claim)
+  "role": "compliance_manager",           // Primary role (custom claim)
+  "permissions": [                        // Cached permissions (custom metadata)
     "view:controls",
     "edit:evidence",
     "approve:policies"
   ],
+  "app_metadata": {                       // Supabase app metadata
+    "organization_id": "org_xyz789",
+    "user_role": "compliance_manager"
+  },
   "session_version": 3,                   // Incremented on password change
   "device_id": "dev_abc123",              // Device fingerprint
   "iat": 1700000000,                      // Issued at
@@ -647,53 +654,57 @@ Delete organization |  ✓    |  ✗    |      ✗         |    ✗    |    ✗ 
 
 ### **2.5 Row-Level Security (RLS)**
 
-**Multi-Tenancy Isolation:**
+**Multi-Tenancy Isolation with Supabase RLS:**
 
-Every database table includes `organization_id` and every query is automatically filtered:
+**Migration Note:** With Supabase PostgreSQL, we implement RLS at the database level, providing an additional security layer beyond application-level filters.
+
+Every database table includes `organization_id` with RLS policies enforced:
 
 ```sql
--- Example: Prisma middleware applies RLS automatically
+-- Example: Supabase RLS enforced at database level
 
-// User requests: GET /api/controls
-// Middleware extracts: user.organizationId = "org_xyz789"
+-- Enable RLS on controls table
+ALTER TABLE controls ENABLE ROW LEVEL SECURITY;
 
-// Query generated by Prisma:
+-- Create RLS policy
+CREATE POLICY "Users can only access their organization's controls"
+  ON controls
+  FOR ALL
+  USING (organization_id = auth.jwt() ->> 'org_id');
+
+-- User requests: GET /api/controls
+-- Supabase automatically filters based on JWT claims
+
 SELECT * FROM controls
-WHERE organization_id = 'org_xyz789'  -- Automatically added
-  AND status = 'active';
+WHERE status = 'active';
+
+-- Supabase RLS adds WHERE clause automatically:
+-- WHERE organization_id = (current user's org_id from JWT)
 
 // Result: User ONLY sees their organization's controls
-// Even if they manually craft API requests, they can't access other orgs
+// Even SQL injection or direct DB access can't bypass RLS
 ```
 
 **RLS Implementation Strategy:**
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
-│ OPTION 1: Application-Level RLS (Current Approach)             │
-├────────────────────────────────────────────────────────────────┤
-│ ✓ Prisma middleware automatically adds WHERE clauses          │
-│ ✓ Works across all database operations                        │
-│ ✓ Easy to audit and test                                      │
-│ ✗ Requires discipline (developers must not bypass Prisma)     │
-│ ✗ Risk if raw SQL queries are used without filters            │
-└────────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────────┐
-│ OPTION 2: Database-Level RLS (PostgreSQL Policies)             │
+│ SUPABASE RLS (Current Implementation)                          │
 ├────────────────────────────────────────────────────────────────┤
 │ ✓ Enforced at database level (impossible to bypass)           │
 │ ✓ Works with any query (Prisma, raw SQL, admin tools)         │
-│ ✗ More complex to set up and debug                            │
-│ ✗ Performance overhead on every query                         │
-│ ✗ Requires SET current_organization_id before each query      │
+│ ✓ JWT claims automatically available to policies              │
+│ ✓ No need to SET session variables manually                   │
+│ ✓ Defense in depth - application + database layers            │
+│ ✓ Integrated with Supabase Auth for seamless security         │
+│ ✓ Performance optimized through PostgreSQL's native RLS       │
 └────────────────────────────────────────────────────────────────┘
 
-Decision: Start with Option 1, migrate to Option 2 post-SOC 2 audit
-         to meet "defense in depth" requirement.
+Implementation: Database-Level RLS with Supabase PostgreSQL
+               Migrated from application-level on November 17, 2025
 ```
 
-**Database-Level RLS (Future Enhancement):**
+**Database-Level RLS (Current Implementation with Supabase):**
 
 ```sql
 -- Enable RLS on all multi-tenant tables
@@ -702,16 +713,24 @@ ALTER TABLE evidence ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agent_executions ENABLE ROW LEVEL SECURITY;
 -- ... (30+ tables)
 
--- Create policy: Users can only access their organization's data
+-- Create policy using Supabase Auth JWT claims
 CREATE POLICY organization_isolation ON controls
 FOR ALL
-USING (organization_id = current_setting('app.current_organization_id')::uuid);
+USING (organization_id = (auth.jwt() ->> 'org_id')::uuid);
 
--- Before each query, set the organization context
-SET app.current_organization_id = 'org_xyz789';
+-- Create policy for evidence table
+CREATE POLICY organization_isolation ON evidence
+FOR ALL
+USING (organization_id = (auth.jwt() ->> 'org_id')::uuid);
 
--- Now all queries are automatically filtered
-SELECT * FROM controls;  -- Only returns controls for org_xyz789
+-- Create policy for agent_executions table
+CREATE POLICY organization_isolation ON agent_executions
+FOR ALL
+USING (organization_id = (auth.jwt() ->> 'org_id')::uuid);
+
+-- No need to SET session variables - JWT claims automatically available!
+-- All queries are automatically filtered based on authenticated user's org
+SELECT * FROM controls;  -- RLS automatically filters by org_id from JWT
 ```
 
 ---
@@ -1051,11 +1070,13 @@ Target: < 15 minutes from detection to new secret deployed
 
 | Data Store | Encryption | Key Management | Rotation |
 |------------|-----------|----------------|----------|
-| **PostgreSQL (Neon)** | AES-256-GCM | Neon-managed (AWS KMS) | Automatic (90 days) |
+| **PostgreSQL (Supabase)** | AES-256-GCM | Supabase-managed (AWS KMS) | Automatic (90 days) |
 | **Redis (Upstash)** | AES-256 | Upstash-managed | Automatic |
-| **S3/R2 (Evidence)** | AES-256 (SSE-S3) | AWS/Cloudflare-managed | Automatic |
+| **Supabase Storage** | AES-256 (S3-compatible) | Supabase-managed | Automatic |
 | **Temporal** | AES-256 | Temporal Cloud-managed | Automatic |
 | **Pinecone** | AES-256 | Pinecone-managed | Automatic |
+
+**Migration Note:** Migrated from Neon + AWS S3 to Supabase (PostgreSQL + Storage) on November 17, 2025
 
 **Application-Level Encryption (for PII fields):**
 
@@ -1119,7 +1140,7 @@ Key storage: Doppler (ENCRYPTION_MASTER_KEY)
 │ │    tag: "...",            // Authentication tag              │
 │ │    version: "v1"          // Key version (for rotation)      │
 │ │  }                                                            │
-│ └─ This blob is ALSO encrypted by Neon's database encryption   │
+│ └─ This blob is ALSO encrypted by Supabase's database encryption│
 └────────────────────────────────────────────────────────────────┘
 
 Result: Double encryption (envelope + database)
@@ -1136,7 +1157,7 @@ Result: Double encryption (envelope + database)
                          ↓
 ┌────────────────────────────────────────────────────────────────┐
 │ STEP 1: Fetch from database                                    │
-│ └─ Neon automatically decrypts database-level encryption       │
+│ └─ Supabase automatically decrypts database-level encryption   │
 └────────────────────────────────────────────────────────────────┘
                          ↓
 ┌────────────────────────────────────────────────────────────────┐
@@ -1182,7 +1203,7 @@ Result: Double encryption (envelope + database)
 |----------|-------------|---------------|-------------|
 | **app.grcplatform.com** | TLS 1.3 (1.2 fallback) | ECDHE-RSA-AES256-GCM-SHA384 | Let's Encrypt (auto-renewed) |
 | **api.grcplatform.com** | TLS 1.3 only | ECDHE-RSA-AES256-GCM-SHA384 | Let's Encrypt (auto-renewed) |
-| **Database (Neon)** | TLS 1.3 only | AES-256-GCM | Neon-provided cert |
+| **Database (Supabase)** | TLS 1.3 only | AES-256-GCM | Supabase-provided cert |
 | **Redis (Upstash)** | TLS 1.3 only | AES-256-GCM | Upstash-provided cert |
 | **Temporal** | TLS 1.3 + mTLS | AES-256-GCM | Mutual TLS certs |
 
@@ -1208,13 +1229,14 @@ Next.js App
      ↓
 Connection String: postgresql://user:pass@host:5432/db?sslmode=require
      ↓
-Neon Postgres (TLS 1.3 enforced)
+Supabase Postgres (TLS 1.3 enforced with PgBouncer pooling)
 
 Configuration:
 ├─ sslmode=require → Reject unencrypted connections
 ├─ Certificate verification → Prevent MITM attacks
-├─ Connection pooling → Reuse encrypted connections (performance)
-└─ IP allowlisting → Only Vercel IPs can connect (additional layer)
+├─ PgBouncer connection pooling → Reuse encrypted connections (performance)
+├─ IP allowlisting → Only Vercel IPs can connect (additional layer)
+└─ RLS enforced → Multi-tenant data isolation at database level
 ```
 
 ### **4.3 Key Management**
@@ -1517,13 +1539,13 @@ Result: User PII deleted, but compliance audit trail intact
 │  │  ├─ React Server Components (server-side)       │            │
 │  │  ├─ Client Components (browser-side)            │            │
 │  │  ├─ API Routes (tRPC + REST)                    │            │
-│  │  ├─ Edge Functions (WebSocket, auth checks)     │            │
+│  │  ├─ Edge Functions (Supabase Realtime, auth)    │            │
 │  │  └─ Auto-scaling (0 → 1000 instances)           │            │
 │  └─────────────────────────────────────────────────┘            │
 │                                                                  │
 │  ┌─────────────────────────────────────────────────┐            │
 │  │  MODAL (Agent Workers - Containerized)          │            │
-│  │  ├─ 16 agent implementations (Python containers)│            │
+│  │  ├─ 15 specialized agents (Python containers)   │            │
 │  │  ├─ Playwright + Browserbase (vision evidence)  │            │
 │  │  ├─ Auto-scaling (0 → 100 containers)           │            │
 │  │  └─ GPU support for future ML models            │            │
@@ -1542,15 +1564,17 @@ Result: User PII deleted, but compliance audit trail intact
 ┌─────────────────────────────────────────────────────────────────┐
 │                      DATA LAYER                                  │
 │  ┌────────────┐  ┌────────────┐  ┌────────────┐                │
-│  │   Neon     │  │  Upstash   │  │  Pinecone  │                │
+│  │  Supabase  │  │  Upstash   │  │  Pinecone  │                │
 │  │(PostgreSQL)│  │  (Redis)   │  │  (Vector)  │                │
 │  └────────────┘  └────────────┘  └────────────┘                │
 │                                                                  │
 │  ┌────────────┐  ┌────────────┐  ┌────────────┐                │
-│  │Cloudflare  │  │ LangSmith  │  │  Helicone  │                │
-│  │  R2 (S3)   │  │  (Traces)  │  │   (LLM)    │                │
+│  │  Supabase  │  │ LangSmith  │  │  Helicone  │                │
+│  │  Storage   │  │  (Traces)  │  │   (LLM)    │                │
 │  └────────────┘  └────────────┘  └────────────┘                │
 └─────────────────────────────────────────────────────────────────┘
+**Migration Note:** Migrated from Neon + Cloudflare R2 to Supabase
+(PostgreSQL + Storage) on November 17, 2025
 ```
 
 ### **6.2 Environment Strategy**
@@ -1570,7 +1594,9 @@ Result: User PII deleted, but compliance audit trail intact
 ```
 Production:
 ├─ Vercel Project: grc-platform-prod
-├─ Database: Neon (Production branch)
+├─ Database: Supabase PostgreSQL (Production project)
+├─ Storage: Supabase Storage (evidence-files bucket)
+├─ Auth: Supabase Auth (Production)
 ├─ Redis: Upstash (Production)
 ├─ Secrets: Doppler (production environment)
 ├─ Domain: app.grcplatform.com
@@ -1580,7 +1606,9 @@ Production:
 
 Staging:
 ├─ Vercel Project: grc-platform-staging
-├─ Database: Neon (Staging branch, forked from prod monthly)
+├─ Database: Supabase PostgreSQL (Staging project, separate instance)
+├─ Storage: Supabase Storage (staging bucket)
+├─ Auth: Supabase Auth (Staging)
 ├─ Redis: Upstash (Staging)
 ├─ Secrets: Doppler (staging environment)
 ├─ Domain: staging.grcplatform.com
@@ -1590,7 +1618,9 @@ Staging:
 
 Development:
 ├─ Vercel Project: grc-platform-dev
-├─ Database: Neon (Dev branch, synthetic data)
+├─ Database: Supabase PostgreSQL (Dev project, synthetic data)
+├─ Storage: Supabase Storage (dev bucket)
+├─ Auth: Supabase Auth (Dev)
 ├─ Redis: Upstash (Dev)
 ├─ Secrets: Doppler (development environment)
 ├─ Domain: dev.grcplatform.com
@@ -1600,7 +1630,9 @@ Development:
 
 Preview (per PR):
 ├─ Vercel Preview Deployment
-├─ Database: Neon (ephemeral branch, auto-created)
+├─ Database: Supabase PostgreSQL (Dev project, shared)
+├─ Storage: Supabase Storage (dev bucket, shared)
+├─ Auth: Supabase Auth (Dev, shared)
 ├─ Redis: Upstash (Dev, shared)
 ├─ Secrets: Doppler (development environment)
 ├─ Domain: pr-{id}-grc-platform.vercel.app
@@ -1809,7 +1841,7 @@ Downtime: 0 seconds
 |-----------|---------------|-----|-----|-------------|---------------|
 | **Vercel Functions** | Concurrent requests | 0 | 1000 | Automatic | Automatic |
 | **Modal Agent Workers** | Queue depth | 0 | 100 | > 10 jobs waiting | < 2 jobs waiting |
-| **Neon Database** | CPU utilization | 0.25 vCPU | 8 vCPU | > 70% for 5 min | < 30% for 10 min |
+| **Supabase Database** | CPU utilization | Micro (2GB RAM) | 4XL (64GB RAM) | > 70% for 5 min | < 30% for 10 min |
 | **Upstash Redis** | Memory utilization | 256 MB | 10 GB | > 80% | < 40% |
 | **Temporal Workers** | Task queue length | 2 | 50 | > 100 tasks | < 10 tasks |
 
@@ -1910,12 +1942,11 @@ grc-platform/infrastructure/
 │  │  └─ development/
 │  │
 │  ├─ modules/
-│  │  ├─ neon-database/          # Neon Postgres setup
+│  │  ├─ supabase-project/       # Supabase (PostgreSQL + Auth + Storage)
 │  │  │  ├─ main.tf
 │  │  │  ├─ variables.tf
 │  │  │  └─ outputs.tf
 │  │  ├─ upstash-redis/          # Redis cache
-│  │  ├─ cloudflare-r2/          # Object storage
 │  │  ├─ vercel-project/         # Vercel config
 │  │  ├─ modal-deployment/       # Agent workers
 │  │  ├─ temporal-namespace/     # Workflow orchestration
@@ -1935,16 +1966,18 @@ grc-platform/infrastructure/
 
 ### **7.2 Infrastructure Components**
 
-**Neon Database Module:**
+**Migration Note:** Terraform modules updated for Supabase on November 17, 2025.
+
+**Supabase Project Module:**
 
 ```hcl
-# modules/neon-database/main.tf
+# modules/supabase-project/main.tf
 
 terraform {
   required_providers {
-    neon = {
-      source  = "kislerdm/neon"
-      version = "~> 0.2"
+    supabase = {
+      source  = "supabase/supabase"
+      version = "~> 1.0"
     }
   }
 }
@@ -1955,45 +1988,56 @@ variable "project_name" {
 
 variable "region" {
   type    = string
-  default = "aws-us-west-2"
+  default = "us-west-1"
 }
 
-variable "database_name" {
-  type = string
+variable "database_password" {
+  type      = string
+  sensitive = true
 }
 
-resource "neon_project" "main" {
-  name   = var.project_name
-  region = var.region
+resource "supabase_project" "main" {
+  name               = var.project_name
+  organization_id    = var.organization_id
+  database_password  = var.database_password
+  region             = var.region
 
-  # Auto-scaling configuration
-  compute_unit_min = 0.25  # 0.25 vCPU (scales to zero)
-  compute_unit_max = 8     # 8 vCPU max
+  # Database configuration
+  plan = "pro"  # Pro plan for production workloads
 
-  # Storage
-  storage_size_mb = 10240  # 10 GB initial
-
-  # Backups
-  backup_retention_days = 30
+  # Enable required features
+  settings = {
+    enable_realtime  = true
+    enable_storage   = true
+    enable_auth      = true
+    enable_functions = true
+  }
 }
 
-resource "neon_branch" "production" {
-  project_id = neon_project.main.id
-  name       = "production"
-  parent_id  = neon_project.main.default_branch_id
+# Create storage buckets
+resource "supabase_storage_bucket" "evidence_files" {
+  project_ref = supabase_project.main.id
+  name        = "evidence-files"
+  public      = false
+
+  # RLS enforced on storage
+  file_size_limit = 52428800  # 50MB max file size
 }
 
-resource "neon_branch" "staging" {
-  project_id = neon_project.main.id
-  name       = "staging"
-  parent_id  = neon_branch.production.id  # Fork from production
+resource "supabase_storage_bucket" "policy_documents" {
+  project_ref = supabase_project.main.id
+  name        = "policy-documents"
+  public      = false
+
+  file_size_limit = 10485760  # 10MB max file size
 }
 
-resource "neon_database" "main" {
-  project_id = neon_project.main.id
-  branch_id  = neon_branch.production.id
-  name       = var.database_name
-  owner_name = "app_user"
+resource "supabase_storage_bucket" "audit_reports" {
+  project_ref = supabase_project.main.id
+  name        = "audit-reports"
+  public      = false
+
+  file_size_limit = 104857600  # 100MB max file size
 }
 
 output "connection_string" {

@@ -27,7 +27,33 @@ This agent thinks like a **release engineer who has seen production outages caus
 ## **Responsibilities**
 
 **SOC 2 Controls Owned:**
-- CC8.1: Change management - authorization and testing
+- CC8.1: Change management - authorization and testing (Primary)
+- CC7.4: Response to security incidents (Supporting - incident-driven changes)
+- CC7.5: Vulnerability management (Supporting - vulnerability remediation tracking)
+- PI1.3: Policies for processing integrity (Supporting - change policies)
+- PI1.4: Monitoring processing integrity (Supporting - change monitoring)
+- PI1.5: Error detection and correction (Supporting - post-deployment validation)
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC8.1** | **CHANGE MANAGEMENT**<br>Production changes approved & tested? No cowboys? | Dev wants to deploy → PR review + tests pass + staging deployment + approval → THEN production. Emergency hotfix at 3AM documented with retroactive approval. | GitHub PR approvals, CI/CD logs, change tickets, approval timestamps |
+| **CC7.4** | **RESPONSE TO SECURITY INCIDENTS** (Supporting)<br>Security incidents trigger changes? | Critical vulnerability found → Emergency patch → Change agent documents incident-driven deployment. | Incident tickets linked to changes, emergency change logs |
+| **CC7.5** | **VULNERABILITY MANAGEMENT** (Supporting)<br>Track vulnerability fixes? | Snyk finds critical CVE → Remediation ticket created → Change agent tracks fix deployment → Closed when verified. | Vulnerability scan reports, remediation tickets, deployment logs |
+| **PI1.3** | **PROCESSING INTEGRITY POLICIES** (Supporting)<br>Change management policies exist? | Change management policy states "All production changes require 2 approvals + tests". Policy enforced by agent. | Change management policy document, enforcement logs |
+| **PI1.4** | **MONITORING PROCESSING INTEGRITY** (Supporting)<br>Monitor if systems work correctly? | Agent monitors deployment success rates, rollback frequency, failure patterns. Alerts on anomalies. | Change success metrics, failure reports, monitoring dashboards |
+| **PI1.5** | **ERROR DETECTION AND CORRECTION** (Supporting)<br>Catch and fix errors from changes? | Deployment causes error spike → Agent detects → Auto-rollback triggered → Error corrected. | Error monitoring, rollback logs, post-deployment validation |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure production changes are authorized, tested, and properly documented?"
+
+**Our Answer:**
+> "Agent 6 enforces CC8.1 by blocking deployments without required approvals (100% enforcement), validating staging deployments precede production, tracking emergency changes with retroactive approval workflows, and maintaining complete audit trails for all 847 production changes this quarter."
+
+---
 
 **Primary Functions:**
 

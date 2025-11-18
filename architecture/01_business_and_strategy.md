@@ -56,7 +56,7 @@ Companies waste **$50K-150K annually** on manual compliance work:
 
 ### **1.3 Our Solution**
 
-An **AI-powered multi-agent GRC automation platform** that:
+An **AI agent GRC engineer** that:
 
 1. **Automates evidence collection** using computer vision + API integrations
 2. **Performs continuous compliance monitoring** 24/7 without human intervention
@@ -918,7 +918,7 @@ Legend:
 | Capability | Us | Delve | Vanta | Drata |
 |-----------|----|----|-------|-------|
 | **Vision-based Evidence** | ✅ YES | ❌ | ❌ | ❌ |
-| **Multi-agent Architecture** | ✅ 16+ agents | ✅ Unknown # | ❌ Basic automation | ❌ Basic automation |
+| **Multi-agent Architecture** | ✅ 15 specialized agents | ✅ Unknown # | ❌ Basic automation | ❌ Basic automation |
 | **Temporal Orchestration** | ✅ YES | ❓ Unknown | ❌ | ❌ |
 | **Code Security Scanning** | ✅ SAST + LLM | ✅ SAST | ❌ | ❌ |
 | **Auto PR Fixes** | ✅ YES | ✅ YES | ❌ | ❌ |
@@ -1819,7 +1819,7 @@ Total User Time: 7 hours over 2 weeks
 ### **11.1 Technical Roadmap**
 
 #### **Q4 2025: Foundation (Phases 1-3)**
-- [x] **Phase 1:** Monorepo, Next.js, Prisma, Clerk ✅
+- [x] **Phase 1:** Monorepo, Next.js, Prisma, Supabase Auth ✅ (Migrated from Clerk on Nov 17, 2025)
 - [x] **Phase 2:** Vercel deployment ✅
 - [ ] **Phase 3:** Audit management UI 🔄
 

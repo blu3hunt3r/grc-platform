@@ -1,7 +1,7 @@
 /**
  * @file api/companies/route.ts
  * @description Company CRUD API endpoints
- * @architecture Reference: System Prompt - API Layer (Next.js API Routes)
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (authentication)
@@ -12,10 +12,14 @@
  * - Authentication required (Clerk)
  * - Input validation (Zod)
  * - Error handling
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentDbUser } from "@/lib/auth/server";
 import { prisma } from "@grc/database";
 import { createCompanySchema } from "@grc/shared";
 
@@ -25,31 +29,10 @@ import { createCompanySchema } from "@grc/shared";
  */
 export async function GET() {
   try {
-    // 1. Check authentication (MANDATORY per System Prompt line 590-608)
-    const user = await currentUser();
-    if (!user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get or create user in database
-    let dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      // Create user if doesn't exist
-      dbUser = await prisma.user.create({
-        data: {
-          clerkId: user.id,
-          email: user.emailAddresses[0]?.emailAddress || "",
-          firstName: user.firstName,
-          lastName: user.lastName,
-          imageUrl: user.imageUrl,
-        },
-      });
-    }
-
-    // 3. Fetch companies
+    // 2. Fetch companies
     const companies = await prisma.company.findMany({
       where: {
         createdById: dbUser.id,
@@ -65,7 +48,7 @@ export async function GET() {
       data: companies,
     });
   } catch (error) {
-    // Error handling (MANDATORY per System Prompt line 339-368)
+    // Error handling
     console.error("Failed to fetch companies", {
       error: error instanceof Error ? error.message : "Unknown error",
       timestamp: new Date(),
@@ -87,34 +70,14 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
-    // 1. Check authentication (MANDATORY)
-    const user = await currentUser();
-    if (!user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get or create user in database
-    let dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          clerkId: user.id,
-          email: user.emailAddresses[0]?.emailAddress || "",
-          firstName: user.firstName,
-          lastName: user.lastName,
-          imageUrl: user.imageUrl,
-        },
-      });
-    }
-
-    // 3. Parse and validate input (MANDATORY per System Prompt line 611-633)
+    // 2. Parse and validate input
     const body = await request.json();
     const validated = createCompanySchema.parse(body);
 
-    // 4. Create company
+    // 3. Create company
     const company = await prisma.company.create({
       data: {
         name: validated.name,
@@ -126,7 +89,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // 5. Log success
+    // 4. Log success
     console.log("Company created successfully", {
       companyId: company.id,
       userId: dbUser.id,

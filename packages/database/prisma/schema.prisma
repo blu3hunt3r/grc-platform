@@ -1,14 +1,16 @@
 // Database schema for GRC Platform
 // Architecture Reference: Section 8 - Data Architecture
-// PostgreSQL (Neon) + Prisma ORM
+// PostgreSQL (Supabase) + Prisma ORM
+// Migrated from Neon to Supabase on November 17, 2025
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")       // Connection pooling (PgBouncer)
+  // directUrl removed - using pooler for migrations (free tier limitation)
 }
 
 // ============================================================================
@@ -17,7 +19,7 @@ datasource db {
 
 model User {
   id        String   @id @default(uuid())
-  clerkId   String   @unique // Clerk user ID
+  clerkId   String   @unique // Clerk user ID (hybrid: Clerk auth + Supabase DB)
   email     String   @unique
   firstName String?
   lastName  String?

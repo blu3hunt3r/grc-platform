@@ -33,12 +33,11 @@ import { z } from 'zod';
 import type {
   LLMTask,
   LLMResponse,
-  Provider,
   ProviderConfig,
   ProviderHealth,
-  TaskType,
   TokenUsage,
 } from './types';
+import { Provider, TaskType } from './types';
 import { LLMFailover } from './failover';
 import { LLMMonitoring } from './monitoring';
 import { LLMRouter } from './router';
@@ -47,10 +46,8 @@ import { LLMRouter } from './router';
 export type {
   LLMTask,
   LLMResponse,
-  Provider,
   ProviderConfig,
   ProviderHealth,
-  TaskType,
   TokenUsage,
 };
 
@@ -227,11 +224,19 @@ export async function generateText(
   }
 ): Promise<string> {
   const llm = LLM.getInstance();
-  const response = await llm.executeText({
+
+  // Build task object with only defined options
+  const task: any = {
     taskType,
     prompt,
-    ...options,
-  });
+  };
+
+  if (options?.systemPrompt) task.systemPrompt = options.systemPrompt;
+  if (options?.temperature !== undefined) task.temperature = options.temperature;
+  if (options?.maxTokens !== undefined) task.maxTokens = options.maxTokens;
+  if (options?.forceProvider) task.forceProvider = options.forceProvider;
+
+  const response = await llm.executeText(task);
   return response.result;
 }
 
@@ -250,13 +255,18 @@ export async function generateObject<T>(
   }
 ): Promise<T> {
   const llm = LLM.getInstance();
-  const response = await llm.executeObject(
-    {
-      taskType,
-      prompt,
-      ...options,
-    },
-    schema
-  );
+
+  // Build task object with only defined options
+  const task: any = {
+    taskType,
+    prompt,
+  };
+
+  if (options?.systemPrompt) task.systemPrompt = options.systemPrompt;
+  if (options?.temperature !== undefined) task.temperature = options.temperature;
+  if (options?.maxTokens !== undefined) task.maxTokens = options.maxTokens;
+  if (options?.forceProvider) task.forceProvider = options.forceProvider;
+
+  const response = await llm.executeObject(task, schema);
   return response.result;
 }

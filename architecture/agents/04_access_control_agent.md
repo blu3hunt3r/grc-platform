@@ -31,8 +31,28 @@ This agent thinks like a **security engineer who has seen 1000 account compromis
 - CC6.1: Logical access - authorization
 - CC6.2: Logical access - MFA
 - CC6.3: Logical access - termination
-- CC6.6: Logical access - data access
-- CC6.7: Access reviews
+- CC6.8: User access reviews
+- P3.2: Privacy - Notice of data collection
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC6.1** | **AUTHORIZED USERS ONLY**<br>Only approved people can log in? | Person gets hired → IT creates account with approval ticket. Random person cannot self-register. | User provisioning tickets, Okta user list with approval dates |
+| **CC6.2** | **MULTI-FACTOR AUTHENTICATION**<br>Everyone uses 2FA/MFA? No bypass? | All 156 users have Okta Verify or Google Authenticator enabled. No "SMS-only" or "remember this device forever". | MFA enrollment report showing 100%, MFA policy config screenshot |
+| **CC6.3** | **DEPROVISIONING (TERMINATION)**<br>When people leave, kill access IMMEDIATELY? | Person quits → All access revoked same day. No "orphaned accounts" from 2022. | Termination tickets + timestamps, no inactive users with active access |
+| **CC6.8** | **USER ACCESS REVIEWS**<br>Review who has what access quarterly? | Every 3 months, managers confirm "Sarah still needs AWS access". Over-privileged access gets removed. | Quarterly review reports, manager attestations, remediation logs |
+| **P3.2** | **PRIVACY - NOTICE OF DATA COLLECTION**<br>Tell users what data you collect? | Privacy policy states "We collect email, IP address, login history". Users see this before agreeing. | Privacy policy document, consent tracking logs |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure only authorized people have access, and you know when to revoke it?"
+
+**Our Answer:**
+> "Agent 4 continuously validates MFA enrollment (100% coverage), orchestrates quarterly access reviews with manager attestations, and monitors deprovisioning SLAs (same-day termination). We maintain audit trails for all access changes."
+
+---
 
 **Primary Functions:**
 

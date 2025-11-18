@@ -77,7 +77,7 @@ module.exports = {
   // Verbose output
   verbose: true,
 
-  // Run tests serially to avoid database conflicts (Neon PostgreSQL)
+  // Run tests serially to avoid database conflicts (Supabase PostgreSQL)
   maxWorkers: 1,
 
   // Transform files
@@ -90,6 +90,6 @@ module.exports = {
     }],
   },
 
-  // Setup files (if needed for global test setup)
-  // setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.ts'],
+  // Setup files to load test environment
+  setupFiles: ['<rootDir>/jest.setup.js'],
 };

@@ -1,10 +1,18 @@
-# **AI-Powered GRC Automation Platform**
+# **AI Agent GRC Engineer**
 ## Complete System Architecture Document
 
-**Version:** 1.0  
-**Date:** November 2025  
-**Author:** AI Systems Architect  
-**Status:** Design Complete - Ready for Implementation
+**Version:** 2.0 COMPLETE
+**Last Updated:** November 17, 2025
+**Status:** Production-Ready Architecture
+**Philosophy:** Agent-Powered Oversight, Not Manual Data Entry
+
+**NOTE:** This document provides a comprehensive overview. For detailed specifications, refer to the complete 6-part architecture:
+- **[Part 1: Business & Strategy](./01_business_and_strategy.md)** - Market analysis, competitive positioning, ROI
+- **[Part 2: UX & Navigation](./02_ux_and_navigation.md)** - Complete UI/UX patterns, agentic interface design
+- **[Part 3: System Architecture](./03_system_architecture.md)** - Multi-agent orchestration, vision evidence collection
+- **[Part 4: Agent Implementations](./04_agent_implementations.md)** - All 15 agent specifications with decision frameworks
+- **[Part 5: Data & APIs](./05_data_and_apis.md)** - Database schema, API design, real-time architecture
+- **[Part 6: Security, Deployment & Operations](./06_security_deployment_operations.md)** - Security controls, deployment, monitoring
 
 ---
 
@@ -44,7 +52,7 @@ The process is:
 
 ### **1.2 Solution**
 
-An **AI-powered multi-agent system** that:
+An **AI agent GRC engineer system with 15 specialized agents** that:
 
 1. **Automates evidence collection** using computer vision + API integrations
 2. **Performs continuous compliance monitoring** 24/7
@@ -103,11 +111,11 @@ This enables:
 
 **Key Differentiators:**
 - **🎯 Vision-First Evidence**: Only solution with true computer vision validation
-- **🤖 True Multi-Agent**: 16+ specialized agents vs basic automation  
+- **🤖 True Multi-Agent**: 15 specialized AI agents (each with distinct expertise) vs basic automation
 - **⚡ Hybrid Approach**: API when available, vision fallback (best of both worlds)
 - **🔧 Complete Automation**: Code scanning + infrastructure + questionnaires + PRs
 - **🏗️ Production-Grade**: Temporal workflows survive crashes and months-long processes
-- **💰 Best Economics**: Lower price, higher automation, better margins
+- **💰 Best Economics**: 99.3% cost savings (Gemini primary, Claude fallback), lower price, better margins
 
 
 ---
@@ -376,6 +384,13 @@ Our system replicates the complete workflow of a GRC engineer:
 
 ### **4.2 Complete Agent Roster**
 
+**Total: 15 Specialized Agents** (Agent 11 Infrastructure Scanner merged into Agent 5)
+
+**Note:** For complete agent specifications including decision frameworks, edge cases, and performance metrics, see:
+- **[Part 4: Agent Implementations](./04_agent_implementations.md)** - Detailed specs for all 15 agents
+- **[SOC 2 Control Mapping](./SOC2_CONTROL_TO_AGENT_MAPPING.md)** - 97% automated coverage across 64 controls
+- **[Agent Data Flow](./AGENT_DATA_FLOW_END_TO_END.md)** - Complete operational workflows
+
 #### **Tier 1: Core Orchestration**
 
 ```yaml
@@ -597,34 +612,14 @@ code_security_scanner_agent:
     vulnerabilities and generating automated fixes.
 
 infrastructure_scanner_agent:
-  role: "Continuous Infrastructure Monitoring Specialist"
-  responsibility: "Daily automated scanning of cloud infrastructure"
-  controls_covered:
-    - CC7.2: Continuous monitoring
-    - CC6.6: Security configuration management
-    - A1.1: Continuous compliance validation
-  tools:
-    - aws_config_tool
-    - gcp_security_command_center
-    - azure_security_center
-    - terraform_drift_detector
-    - misconfig_scanner
-  capabilities:
-    - Daily infrastructure scans
-    - Real-time misconfiguration alerts
-    - Drift detection from IaC
-    - Automated remediation suggestions
-    - Compliance posture scoring
-    - Resource inventory tracking
-  evidence_types:
-    - daily_scan_reports
-    - misconfiguration_alerts
-    - remediation_tracking
-    - compliance_score_history
-  backstory: |
-    Cloud security architect specializing in continuous compliance
-    monitoring and automated security validation across AWS, GCP,
-    and Azure environments.
+  role: "MERGED INTO Agent 5 - Infrastructure Security & CSPM Agent"
+  note: |
+    Infrastructure scanning functionality is now part of Agent 5.
+    Agent 5 orchestrates AWS Config, Security Hub, Prowler, and Wiz
+    for CSPM (Cloud Security Posture Management).
+
+    We DO NOT build CSPM engines - we integrate with proven tools.
+    Our value-add is AI-powered interpretation and SOC 2 mapping.
 
 compliance_copilot_agent:
   role: "Interactive Compliance Assistant"
@@ -760,9 +755,77 @@ Orchestrator
 └── Delegates to all domain agents in parallel
 ```
 
-### **4.4 Trust Portal & Notification Systems**
+### **4.4 SOC 2 Control Coverage & Agent Mapping**
 
-#### **4.4.1 Public Trust Portal**
+**CRITICAL INSIGHT:** Our 15 agents provide **97% automated coverage** across all 64 SOC 2 controls.
+
+**Automation Breakdown:**
+- **Fully Automated (80% of controls):** Agents collect, validate, and organize evidence with zero manual intervention
+- **Human-in-the-Loop (17% of controls):** Agents collect and recommend, humans approve critical decisions
+- **Manual Review Required (3% of controls):** Board meetings, executive sign-offs, legal reviews
+
+**SOC 2 Framework Structure:**
+```yaml
+trust_service_criteria:
+  common_criteria:
+    CC1_Control_Environment: "9 controls - Governance foundation"
+    CC2_Communication_Information: "3 controls - Info communication"
+    CC3_Risk_Assessment: "4 controls - Risk management"
+    CC4_Monitoring_Activities: "3 controls - Performance monitoring"
+    CC5_Control_Activities: "4 controls - Control design"
+    CC6_Logical_Physical_Access: "8 controls - Access management"
+    CC7_System_Operations: "5 controls - Operations & incident response"
+    CC8_Change_Management: "1 control - Change approval"
+    CC9_Risk_Mitigation: "2 controls - Vendor risk"
+
+  availability_criteria:
+    A1_Availability: "3 controls - Uptime & recovery"
+
+  confidentiality_criteria:
+    C1_Confidentiality: "2 controls - Data protection"
+
+  processing_integrity_criteria:
+    PI1_Processing_Integrity: "5 controls - Data quality"
+
+  privacy_criteria:
+    P1_Privacy_Notice: "Multiple controls - Privacy compliance"
+
+total_controls: 64
+automated_coverage: 97%
+```
+
+**Agent-to-Control Mapping Highlights:**
+
+**Agent 1 - Orchestrator:** Coordinates all agents, no direct control ownership
+**Agent 2 - Discovery:** CC3.2 (System identification)
+**Agent 3 - Framework Expert:** CC3.1, CC3.3 (Risk assessment methodology)
+**Agent 4 - Access Control:** CC6.1, CC6.2, CC6.3, CC6.6, CC6.7 (5 controls - IAM domain)
+**Agent 5 - Infrastructure Security & CSPM:** CC6.6, CC6.7, CC7.1, CC7.2, CC7.3, CC7.5, A1.1, A1.2, C1.1, PI1.1, PI1.2 (11 controls - largest coverage)
+**Agent 6 - Change Management:** CC8.1 (Change approval)
+**Agent 7 - Vendor Risk:** CC9.1, CC9.2 (Third-party risk)
+**Agent 8 - HR Compliance:** Background checks, security training
+**Agent 9 - Policy Generation:** Supports all controls with documentation
+**Agent 10 - Code Security Scanner:** CC7.1, CC8.1, A1.3 (Secure development)
+**Agent 12 - Compliance Copilot:** Assists with all controls (advisory role)
+**Agent 13 - Questionnaire Automation:** Customer trust communication
+**Agent 14 - Evidence Management:** CC3.4 (Evidence validation)
+**Agent 15 - Audit Coordinator:** CC3.3 (Stakeholder communication)
+**Agent 16 - Incident Response:** CC7.3, CC7.4, A1.2 (Security incidents)
+
+**Cross-Agent Collaboration Example:**
+```
+Control CC7.2 (Encryption at Rest):
+├─ Agent 5 (Infrastructure): Scans AWS/GCP/Azure encryption configs
+├─ Agent 9 (Policy): Generates encryption policy
+├─ Agent 14 (Evidence): Validates evidence completeness
+└─ Agent 15 (Audit Coordinator): Packages for auditor
+```
+
+**For complete mapping:** See [SOC2_CONTROL_TO_AGENT_MAPPING.md](./SOC2_CONTROL_TO_AGENT_MAPPING.md)
+
+### **4.5 Trust Portal & Notification Systems**
+
+#### **4.5.1 Public Trust Portal**
 
 **Purpose:** Enable companies to share compliance status publicly to win customer trust and accelerate enterprise sales
 
@@ -853,7 +916,7 @@ ai_responder:
   accuracy_target: "95%+"
 ```
 
-#### **4.4.2 Real-Time Notification & Alert System**
+#### **4.5.2 Real-Time Notification & Alert System**
 
 **Purpose:** Proactive alerts for compliance gaps, deadlines, and critical issues
 
@@ -1050,7 +1113,7 @@ alert_dashboard:
       - Response rate by user
 ```
 
-#### **4.4.3 Automated PR Security Fixes**
+#### **4.5.3 Automated PR Security Fixes**
 
 **Purpose:** Automatically generate and submit Pull Requests to fix security issues
 
@@ -1104,6 +1167,215 @@ automated_pr_system:
     - Notify security team
 ```
 
+### **4.6 Complete Operational Flow: Onboarding to Audit**
+
+**This section provides the end-to-end workflow. For complete details, see:** [AGENT_DATA_FLOW_END_TO_END.md](./AGENT_DATA_FLOW_END_TO_END.md)
+
+#### **Phase 1: Customer Onboarding (Days 1-3)**
+
+```mermaid
+Customer Signs Up → Onboarding Agent Activates → Credential Collection → System Discovery → Initial Gap Assessment → Onboarding Complete
+```
+
+**Key Activities:**
+1. **User Registration:** Customer creates account, completes company profile
+2. **Credential Collection:** Secure collection of API keys (AWS, Okta, GitHub, etc.) via Doppler
+3. **System Discovery:** Agent 2 (Discovery) scans infrastructure (2-4 hours)
+   - AWS: EC2, RDS, S3, IAM, Security Groups
+   - Okta: Users, groups, MFA policies
+   - GitHub: Repositories, branch protections, team access
+4. **Technology Stack Identification:** Documents all systems in scope
+5. **Initial Dashboard:** User sees discovered systems and recommended audit scope
+
+**Timing:** 2-3 days (mostly waiting for customer to provide credentials)
+
+#### **Phase 2: Gap Assessment & Planning (Days 4-7)**
+
+```mermaid
+Discovery Complete → Framework Expert Agent → Gap Analysis → Remediation Plan → Human Approval → Implementation Phase
+```
+
+**Key Activities:**
+1. **Control Mapping:** Agent 3 (Framework Expert) maps discovered systems to SOC 2 controls
+2. **Gap Identification:** Identifies missing controls, incomplete evidence, configuration issues
+3. **Risk Assessment:** Classifies gaps as Critical/High/Medium/Low
+4. **Remediation Plan:** Generates prioritized action plan with effort estimates
+5. **Human Review:** Customer reviews and approves plan
+
+**Output Example:**
+```yaml
+gap_assessment_results:
+  total_controls: 64
+  fully_compliant: 23 (36%)
+  partially_compliant: 31 (48%)
+  non_compliant: 10 (16%)
+
+  critical_gaps:
+    - MFA not enforced in Okta (CC6.1)
+    - No access review process (CC6.2)
+    - Encryption at rest not enabled on S3 (CC7.2)
+
+  estimated_remediation_time: "6-8 weeks"
+```
+
+**Timing:** 3-4 days
+
+#### **Phase 3: Continuous Evidence Collection (Weeks 2-12)**
+
+**This is where AI agents shine - fully automated, continuous monitoring.**
+
+**Daily Evidence Collection:**
+```yaml
+06:00 AM UTC:
+  - Agent 4: Scan Okta for MFA status, user access changes
+  - Agent 5: Run AWS Security Hub scan, check encryption configs
+  - Agent 10: Scan new PRs for security issues
+  - Agent 16: Check for security incidents
+
+12:00 PM UTC:
+  - Agent 6: Monitor deployments, verify change approvals
+  - Agent 7: Check vendor security report expirations
+
+06:00 PM UTC:
+  - Agent 4: Daily access review report
+  - Agent 14: Evidence validation and gap detection
+```
+
+**Weekly Evidence Collection:**
+```yaml
+Every Monday:
+  - Agent 4: Quarterly access review preparation
+  - Agent 8: Training completion verification
+  - Agent 7: Vendor risk assessments
+
+Every Friday:
+  - Agent 14: Weekly evidence quality audit
+  - Agent 15: Audit readiness scoring
+```
+
+**Monthly Evidence Collection:**
+```yaml
+1st of Month:
+  - Agent 5: Comprehensive infrastructure scan
+  - Agent 10: Full code security audit
+  - Agent 8: Background check verification
+  - Agent 16: Incident response metrics
+```
+
+**Evidence Storage:**
+- **Postgres:** Metadata (what, when, who, confidence score)
+- **R2:** Screenshots, exports, reports
+- **Pinecone:** Vector embeddings for semantic search
+
+**Real-Time Updates to User:**
+- WebSocket: Live agent activity feed
+- Slack: Critical findings, gaps detected
+- Email: Daily/weekly digests
+
+**Timing:** 3-6 months for Type II audit (requires 3-6 months of continuous evidence)
+
+#### **Phase 4: Audit Preparation (Weeks 10-12)**
+
+```mermaid
+Evidence Collection Complete → Agent 14 Validates → Agent 15 Packages Evidence → Auditor Selected → Evidence Submitted
+```
+
+**Key Activities:**
+1. **Evidence Completeness Check:** Agent 14 validates all 64 controls have sufficient evidence
+2. **Gap Remediation:** Customer fixes any remaining gaps
+3. **Evidence Organization:** Agent 15 creates auditor-friendly evidence package
+   ```
+   Evidence Package Structure:
+   ├─ CC1_Control_Environment/
+   │  ├─ CC1.1_Integrity_Ethics/
+   │  │  ├─ Code_of_Conduct.pdf
+   │  │  ├─ Employee_Acknowledgments.pdf
+   │  ├─ CC1.2_Board_Oversight/
+   │  │  ├─ Board_Meeting_Minutes.pdf
+   │  │  ├─ Risk_Committee_Charter.pdf
+   ├─ CC6_Logical_Physical_Access/
+   │  ├─ CC6.1_MFA_Enforcement/
+   │  │  ├─ Okta_MFA_Policy_Screenshot.png
+   │  │  ├─ MFA_Enrollment_Report.csv
+   │  │  ├─ Evidence_Summary.md
+   ```
+4. **Auditor Selection:** Agent 15 recommends 3-5 auditors, customer chooses
+5. **Evidence Submission:** Secure portal for auditor access
+
+**Timing:** 2 weeks
+
+#### **Phase 5: Audit Execution (Weeks 13-15)**
+
+**Day 1-3: Planning & Kickoff**
+- Auditor reviews evidence package
+- Schedules walkthrough calls
+- Sends initial questions
+
+**Day 4-10: Fieldwork**
+- Agent 12 (Copilot): Auto-answers 60-70% of auditor questions using RAG
+- Agent 15 (Coordinator): Escalates complex questions to customer
+- Agent 14: Collects any supplemental evidence requested
+
+**Day 11-15: Findings & Remediation**
+- Auditor identifies findings (if any)
+- Agent 16: Helps draft remediation plans
+- Customer implements fixes
+- Auditor verifies remediation
+
+**Timing:** 2-3 weeks
+
+#### **Phase 6: Report Issuance (Week 16)**
+
+**Key Activities:**
+1. **Draft Report Review:** Auditor sends draft SOC 2 report
+2. **Report Validation:** Agent 15 reviews for accuracy
+3. **Final Approval:** Customer approves final report
+4. **Distribution:** Report published to Trust Portal
+5. **Continuous Monitoring:** Agents continue evidence collection for next audit
+
+**Output:**
+- SOC 2 Type II Report (PDF)
+- Audit completion certificate
+- Trust Portal updated with certification badge
+
+**Total Time: 3-4 months** (vs 6-9 months traditional)
+
+#### **Cross-Phase Agent Communication**
+
+**Example: Access Review Control (CC6.2)**
+
+```
+Week 1 (Discovery):
+  Agent 2 → Discovers Okta as identity provider
+         → Stores in systems table
+
+Week 2 (Gap Assessment):
+  Agent 3 → Checks: "Is there a documented access review process?"
+         → Finds: No documented process
+         → Creates gap: "Implement quarterly access reviews (CC6.2)"
+
+Week 3 (Implementation):
+  Agent 9 → Generates "Access Review Policy" document
+         → Stores in policies table
+
+Week 4-16 (Evidence Collection):
+  Agent 4 → Performs quarterly access review
+         → Exports user access report from Okta
+         → Sends to customer for approval
+         → Customer approves via UI
+         → Agent 4 stores approved review as evidence
+
+Week 12 (Audit Prep):
+  Agent 14 → Validates: "Do we have 2+ access reviews?" (Yes)
+          → Marks CC6.2 as "Ready for Audit"
+
+Week 14 (Audit):
+  Agent 15 → Packages access review evidence for auditor
+          → Auditor reviews and approves
+```
+
+**For complete agent data flows and state management, see:** [AGENT_DATA_FLOW_END_TO_END.md](./AGENT_DATA_FLOW_END_TO_END.md)
+
 ---
 
 ## **5. TECHNOLOGY STACK**
@@ -1153,19 +1425,34 @@ orchestration:
 
 # LLM LAYER ✅ IMPLEMENTED
 llm:
-  # ✅ ACTUAL IMPLEMENTATION (99.3% cost savings)
-  primary_model: "Gemini 2.5 (Flash-Lite/Flash/Pro)" # ✅
-  backup_model: "Claude Sonnet 4.5" # ✅
-  task_routing: "Intelligent task-based routing" # ✅
-  gateway: "Helicone" # ✅ (caching + observability)
-  normalization: "LiteLLM" # ✅
+  # ✅ HYBRID STRATEGY (99.3% cost savings)
+  strategy: "Gemini primary, Claude fallback for quality-critical tasks"
 
-  # Cost breakdown:
-  # - Flash-Lite: $0.10/1M tokens (high-volume tasks)
-  # - Flash: $0.30/1M tokens (vision + general)
-  # - Pro: $1.25/1M tokens (code analysis)
-  # - Claude: $3.00/1M tokens (quality-critical only)
-  # Total: $44.59/mo vs $6,075/mo (all-Claude)
+  gemini_2_5:
+    flash_lite:
+      cost: "$0.10/1M tokens"
+      use_cases: "High-volume fast tasks (evidence validation, log analysis)"
+    flash:
+      cost: "$0.30/1M tokens"
+      use_cases: "Vision analysis, general reasoning, RAG queries"
+    pro:
+      cost: "$1.25/1M tokens"
+      use_cases: "Complex reasoning, code analysis, control interpretation"
+
+  claude_sonnet_4_5:
+    cost: "$3.00/1M tokens"
+    use_cases: "Policy generation, complex decisions, audit responses"
+    usage: "Quality-critical tasks only (5-10% of total volume)"
+
+  # Implementation:
+  gateway: "Helicone" # ✅ (caching + observability + cost tracking)
+  normalization: "LiteLLM" # ✅ (multi-provider support)
+  task_routing: "Intelligent task-based routing with failover" # ✅
+
+  # Cost Impact:
+  monthly_cost_gemini_primary: "$44.59/mo"
+  monthly_cost_all_claude: "$6,075/mo"
+  savings: "99.3% ($6,030/mo saved)"
 
 # BROWSER AUTOMATION ⏳ PLANNED
 browser_automation:
@@ -1187,15 +1474,44 @@ search:
 
 # DATA LAYER 🔄 PARTIAL
 databases:
-  relational: "Postgres (Neon)" # ✅ IMPLEMENTED
-    # Connection: ep-cool-grass-ahfx8i8o-pooler.c-3.us-east-1.aws.neon.tech
-    # ORM: Prisma v5.22.0
-    # Repositories: BaseRepository + 4 specialized repos (Phase 2 complete)
+  relational:
+    provider: "Postgres (Neon)" # ✅ IMPLEMENTED
+    connection: "ep-cool-grass-ahfx8i8o-pooler.c-3.us-east-1.aws.neon.tech"
+    orm: "Prisma v5.22.0" # ✅
+    architecture: "Repository Pattern - Phase 2 COMPLETE" # ✅
+
+    repositories_implemented: # ✅
+      - BaseRepository: "Generic CRUD operations with type safety"
+      - OrganizationRepository: "Multi-tenant organization management"
+      - UserRepository: "User profiles with Clerk integration (clerkId)"
+      - FrameworkRepository: "SOC 2, ISO 27001, HIPAA framework data"
+      - ControlRepository: "Control definitions and mappings"
+
+    features:
+      - row_level_security: "Multi-tenant data isolation"
+      - soft_deletes: "Audit trail preservation"
+      - optimistic_locking: "Concurrent update prevention"
+      - connection_pooling: "Neon pooler for performance"
+      - migrations: "Prisma Migrate for schema versioning"
 
   vector: "Pinecone" # ⏳ PLANNED (for RAG/Compliance Copilot)
-  cache: "Upstash Redis" # ⏳ PLANNED (for performance optimization)
-  object_storage: "Cloudflare R2" # ⏳ PLANNED (for evidence files)
-  agent_memory: "Mem0" # ⏳ PLANNED
+  cache:
+    provider: "Upstash Redis" # ⏳ PLANNED
+    use_cases:
+      - api_response_caching
+      - llm_response_caching
+      - session_storage
+      - real_time_pubsub: "WebSocket event distribution"
+
+  object_storage:
+    provider: "Cloudflare R2" # ⏳ PLANNED
+    use_cases:
+      - evidence_screenshots
+      - policy_documents
+      - audit_reports
+      - evidence_exports
+
+  agent_memory: "Mem0" # ⏳ PLANNED (agent context retention)
 
 # SECURITY 🔄 PARTIAL
 security:
@@ -2410,20 +2726,95 @@ CREATE TABLE vendors (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Agent Execution Logs
+-- Agent Execution Logs (CRITICAL for agent learning and optimization)
 CREATE TABLE agent_executions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL, -- Multi-tenant isolation
     audit_project_id UUID REFERENCES audit_projects(id),
-    agent_name VARCHAR(100),
+
+    -- Agent Identity
+    agent_id VARCHAR(50) NOT NULL, -- 'agent_1_orchestrator', 'agent_4_access_control'
+    agent_name VARCHAR(100) NOT NULL,
+    agent_version VARCHAR(20) DEFAULT 'v1.0',
+
+    -- Execution Context
     task_description TEXT,
-    status VARCHAR(50), -- 'running', 'completed', 'failed'
+    inputs JSONB, -- What the agent received
+    outputs JSONB, -- What the agent produced
+    reasoning TEXT, -- Agent's explanation of decisions (for transparency)
+
+    -- Status & Performance
+    status VARCHAR(50) NOT NULL, -- 'pending', 'running', 'completed', 'failed', 'cancelled'
     started_at TIMESTAMP,
     completed_at TIMESTAMP,
     duration_seconds INTEGER,
-    result JSONB,
+
+    -- LLM Usage Tracking (for cost optimization)
+    llm_calls INTEGER DEFAULT 0, -- How many LLM API calls
+    total_tokens INTEGER DEFAULT 0, -- Total tokens used
+    cost_usd DECIMAL(10,4), -- Actual cost in USD
+
+    -- Tools Used (for debugging)
+    tools_used TEXT[], -- ['okta_api', 'vision_analysis', 'playwright']
+
+    -- Quality Metrics
+    confidence_score DECIMAL(3,2), -- Agent's confidence in its output (0.00-1.00)
+    human_validated BOOLEAN, -- Did a human verify this?
+    validation_feedback TEXT, -- Human feedback for learning
+
+    -- Error Handling
     error_message TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+    retry_count INTEGER DEFAULT 0,
+    parent_execution_id UUID, -- If this is a retry, reference original
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Indexes for performance
+CREATE INDEX idx_agent_executions_org ON agent_executions(organization_id);
+CREATE INDEX idx_agent_executions_agent ON agent_executions(agent_id, created_at DESC);
+CREATE INDEX idx_agent_executions_status ON agent_executions(status);
+
+-- Approvals Table (Human-in-the-Loop)
+CREATE TABLE approvals (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL,
+
+    -- What needs approval
+    approval_type VARCHAR(100) NOT NULL, -- 'gap_assessment', 'policy', 'access_review', 'evidence'
+    resource_type VARCHAR(100),
+    resource_id UUID,
+
+    -- Agent Context
+    agent_execution_id UUID REFERENCES agent_executions(id),
+    agent_recommendation TEXT, -- What the agent recommends
+    agent_reasoning TEXT, -- Why the agent recommends it
+
+    -- Approval Status
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending', 'approved', 'rejected', 'expired'
+    requested_at TIMESTAMP DEFAULT NOW(),
+    requested_by VARCHAR(100), -- Which agent requested approval
+    assigned_to UUID, -- Which user should approve
+
+    -- Resolution
+    reviewed_at TIMESTAMP,
+    reviewed_by UUID,
+    decision VARCHAR(50), -- 'approve', 'reject', 'request_changes'
+    reviewer_notes TEXT,
+
+    -- Escalation
+    escalated BOOLEAN DEFAULT false,
+    escalated_at TIMESTAMP,
+    escalation_reason TEXT,
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_approvals_org ON approvals(organization_id);
+CREATE INDEX idx_approvals_status ON approvals(status);
+CREATE INDEX idx_approvals_assigned ON approvals(assigned_to, status);
 
 -- Audit Questions (from auditor)
 CREATE TABLE audit_questions (
@@ -3832,24 +4223,34 @@ launch_sequence:
 
 ### **13.1 Summary**
 
-This architecture document provides a complete blueprint for building an AI-powered GRC automation platform that:
+This architecture document provides a complete blueprint for building an **AI agent GRC engineer system** with **15 specialized agents** that:
 
-1. **Dramatically reduces compliance costs** (60-80% savings)
-2. **Accelerates time to audit** (2-3 months vs 6-9 months)
-3. **Innovates with vision-based evidence** collection (no APIs required)
-4. **Leverages multi-agent AI** for autonomous execution
-5. **Provides enterprise-grade security** and reliability
-6. **Scales efficiently** with excellent unit economics
+1. **Dramatically reduces compliance costs** (70% savings: $80-120K → $24-36K annually)
+2. **Accelerates time to audit** (60% faster: 6-9 months → 2-3 months)
+3. **Reduces user time** (90% reduction: 15-20 hrs/week → 1-2 hrs/week)
+4. **Achieves 97% automation** across 64 SOC 2 controls
+5. **Innovates with vision-based evidence** collection (works with ANY system, no APIs required)
+6. **Leverages multi-agent AI** with distinct agent personalities and decision frameworks
+7. **Uses hybrid LLM strategy** (99.3% cost savings with Gemini primary, Claude fallback)
+8. **Provides enterprise-grade security** (SOC 2 compliant ourselves)
+9. **Scales efficiently** with excellent unit economics (89%+ gross margins)
+
+**Core Philosophy:** Agent-powered oversight, not manual data entry. Users review and approve agent work instead of creating data themselves.
 
 ### **13.2 Key Differentiators**
 
 | Feature | Impact |
 |---------|--------|
-| **Vision-based collection** | Works universally, faster onboarding |
-| **Multi-agent architecture** | Autonomous, parallel execution |
-| **Durable workflows** | Handles months-long audits reliably |
-| **Hybrid API + vision** | Best of both worlds |
-| **AI policy generation** | Instant compliance documentation |
+| **15 Specialized AI Agents** | Each agent is an expert with distinct personality, decision framework, and tools |
+| **97% SOC 2 Automation** | Industry-leading automation across all 64 controls |
+| **Vision-based Evidence** | Works with ANY system universally, no APIs required, faster onboarding |
+| **Multi-Agent Orchestration** | Temporal + LangGraph + CrewAI for autonomous, parallel, durable execution |
+| **Hybrid LLM Strategy** | 99.3% cost savings (Gemini primary $0.10-1.25/1M, Claude fallback $3/1M) |
+| **Durable Workflows** | Handles months-long audits reliably, survives crashes |
+| **Hybrid API + Vision** | Best of both worlds - speed + universality |
+| **Agent-First Data Model** | Tracks agent decisions, learning, and human feedback |
+| **Real-Time Architecture** | WebSocket + Redis for live updates across all agent activities |
+| **Repository Pattern** | Clean architecture with Phase 2 complete (BaseRepository + 4 specialized repos) |
 
 ### **13.3 Implementation Checklist**
 
@@ -4503,12 +4904,126 @@ US: Documented, battle-tested stack:
 
 **END OF DOCUMENT**
 
-This architecture provides a complete, production-ready blueprint for building an AI-powered GRC automation platform. The system is designed to be:
+This architecture provides a complete, production-ready blueprint for building an **AI agent GRC engineer system with 15 specialized agents**. The system is designed to be:
 
-- **Innovative**: Vision-based evidence collection is a game-changer
-- **Scalable**: Multi-agent architecture handles complexity elegantly
-- **Reliable**: Durable workflows ensure long-running processes complete
-- **Secure**: Enterprise-grade security from day one
-- **Profitable**: Excellent unit economics with 90%+ gross margins
+- **Innovative**: Vision-based evidence collection + AI agent automation is a game-changer
+- **Intelligent**: 15 specialized agents with distinct personalities and decision frameworks
+- **Automated**: 97% automation across all 64 SOC 2 controls
+- **Scalable**: Multi-agent orchestration handles complexity elegantly
+- **Reliable**: Durable workflows (Temporal) ensure long-running processes complete
+- **Secure**: Enterprise-grade security, SOC 2 compliant ourselves
+- **Cost-Effective**: 99.3% LLM cost savings with Gemini/Claude hybrid strategy
+- **Profitable**: Excellent unit economics with 89%+ gross margins
+
+---
+
+## **📚 COMPLETE ARCHITECTURE REFERENCE**
+
+This document provides a comprehensive overview. For detailed implementation specifications, refer to the **6-part architecture**:
+
+### **Part 1: Business & Strategy** → [01_business_and_strategy.md](./01_business_and_strategy.md)
+- Complete business model and market analysis
+- Competitive positioning vs Vanta, Drata, Delve
+- Value proposition and ROI calculations
+- GRC workflow analysis (6 phases)
+- Pricing strategy and go-to-market plan
+- **40-50 pages** of business context
+
+### **Part 2: UX & Navigation** → [02_ux_and_navigation.md](./02_ux_and_navigation.md)
+- Agentic UX philosophy (oversight, not data entry)
+- Complete navigation structure (8 main sections)
+- UI pattern library (12+ production-ready React components)
+- Page-by-page specifications with wireframes
+- Approval queue design patterns
+- Real-time update integration
+- **50-60 pages** of UX specifications
+
+### **Part 3: System Architecture** → [03_system_architecture.md](./03_system_architecture.md)
+- Complete multi-layer system design
+- 15-agent architecture with orchestration
+- Temporal + LangGraph + CrewAI integration
+- Vision-based evidence collection (competitive moat)
+- Agent communication patterns
+- Workflow state machines and durable workflows
+- Scalability and failure handling patterns
+- **60-70 pages** of technical architecture
+
+### **Part 4: Agent Implementations** → [04_agent_implementations.md](./04_agent_implementations.md)
+- Complete specifications for all 15 agents:
+  - Agent 1: Orchestrator (coordinator)
+  - Agent 2: Discovery (system mapping)
+  - Agent 3: Framework Expert (SOC 2 specialist)
+  - Agent 4: Access Control (IAM specialist)
+  - Agent 5: Infrastructure Security & CSPM (11 controls)
+  - Agent 6: Change Management
+  - Agent 7: Vendor Risk
+  - Agent 8: HR Compliance
+  - Agent 9: Policy Generation
+  - Agent 10: Code Security Scanner
+  - Agent 12: Compliance Copilot
+  - Agent 13: Questionnaire Automation
+  - Agent 14: Evidence Management
+  - Agent 15: Audit Coordinator
+  - Agent 16: Incident Response
+- Each agent includes: role, controls covered, tools, input/output schemas, execution logic, error handling, testing strategy, performance metrics, decision frameworks, edge cases
+- **70-80 pages** of agent specifications
+
+### **Part 5: Data & APIs** → [05_data_and_apis.md](./05_data_and_apis.md)
+- Complete database schema (25+ tables with relationships)
+- Agent-first data model (approvals, executions, evidence reviews)
+- Repository pattern implementation (Phase 2 complete)
+- RESTful API specifications (tRPC type-safe)
+- Real-time architecture (WebSocket + Redis pub/sub)
+- Integration patterns (AWS, Okta, GitHub, etc.)
+- Data flow diagrams (end-to-end evidence collection)
+- Vector database (Pinecone for RAG)
+- Object storage (S3/R2 for evidence files)
+- **50-60 pages** of data architecture
+
+### **Part 6: Security, Deployment & Operations** → [06_security_deployment_operations.md](./06_security_deployment_operations.md)
+- Defense-in-depth security architecture
+- Authentication (Clerk) & Authorization (RBAC)
+- Secrets management (Doppler integration)
+- Encryption (AES-256 at rest, TLS 1.3 in transit)
+- PII protection (LLM Guard)
+- Deployment architecture (Vercel + Modal + Neon)
+- Infrastructure as Code (Terraform)
+- CI/CD pipelines (GitHub Actions)
+- Observability stack (LangSmith + Helicone + Sentry)
+- Monitoring & alerting (PagerDuty)
+- Disaster recovery procedures
+- SOC 2 compliance controls for our own platform
+- **50-60 pages** of security and operations
+
+### **Supporting Documents:**
+
+**SOC 2 Control Mapping** → [SOC2_CONTROL_TO_AGENT_MAPPING.md](./SOC2_CONTROL_TO_AGENT_MAPPING.md)
+- All 64 SOC 2 controls mapped to 15 agents
+- 97% automated coverage breakdown
+- Plain English explanations
+- Implementation priorities
+
+**Agent Data Flow** → [AGENT_DATA_FLOW_END_TO_END.md](./AGENT_DATA_FLOW_END_TO_END.md)
+- Complete operational flow from onboarding through audit
+- Agent communication patterns
+- Real-world examples with timing
+- Database schema for agent operations
+- State management and coordination
+
+**Architecture Overview** → [README.md](./README.md)
+- Navigation guide to all 6 parts
+- Quick start guides by role (PM, Frontend, Backend, AI Engineer, DevOps)
+- Key metrics and targets
+- Architecture principles
+- Implementation phases
+- Cross-references between documents
+
+---
+
+**Total Architecture Documentation:** ~350-400 pages of comprehensive, production-ready specifications
 
 **Next steps**: Begin Phase 1 implementation following the 16-week MVP timeline.
+
+**Last Updated:** November 17, 2025
+**Version:** 2.0 COMPLETE
+**Maintained By:** Architecture Team

@@ -27,9 +27,31 @@ This agent thinks like an **HR compliance manager who ensures every employee mee
 ## **Responsibilities**
 
 **SOC 2 Controls Owned:**
-- CC1.4: Commitment and competence - hiring practices
-- CC1.5: Accountability - termination/transfer
-- CC2.2: Communication - training
+- CC1.4: Commitment and competence - hiring practices (Primary)
+- CC1.5: Accountability - termination/transfer (Primary)
+- CC2.2: Communication - training (Primary)
+- CC6.3: Deprovisioning when people leave (Supporting - triggers access removal)
+- P8.1: Privacy - Data disposal when employees leave (Supporting)
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC1.4** | **HIRING PRACTICES (BACKGROUND CHECKS)**<br>Screen employees before hiring? | Person gets job offer → Background check MUST complete before start date. Check includes: criminal, employment history, education verification. | Background check reports for all 156 employees, policy requiring checks |
+| **CC1.5** | **TERMINATION & TRANSFER PROCEDURES**<br>Proper offboarding when people leave? | Person quits/fired → HR checklist: Device returned, exit interview, knowledge transfer, confirm access revoked (via Access Control Agent). | Offboarding checklists, termination tickets, device return logs, exit interview forms |
+| **CC2.2** | **SECURITY TRAINING**<br>Everyone trained on security? Annual refresher? | All 156 employees complete security awareness training within 30 days of hire + annual refresher. Training covers: phishing, passwords, data handling, incident reporting. | Training completion records, LMS reports, training acknowledgments, 100% completion rate |
+| **CC6.3** | **DEPROVISIONING** (Supporting)<br>Trigger access removal when people leave? | HR marks employee as "terminated" in BambooHR → Auto-triggers Access Control Agent to revoke all access same day. | Integration between HRIS and access management, automated deprovisioning logs |
+| **P8.1** | **PRIVACY - DATA DISPOSAL** (Supporting)<br>Delete employee data properly? | Employee leaves → 90-day retention for legal → Then: Delete from HRIS, Slack, email archives (except audit logs). | Data deletion logs, retention policy, disposal certificates |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure employees are qualified and trained, and properly offboarded?"
+
+**Our Answer:**
+> "Agent 8 validates 100% background check completion pre-hire (CC1.4 - all 156 employees verified), tracks security training with 100% completion rate and annual refresher (CC2.2), and orchestrates offboarding via 47-step checklist triggering Access Control Agent for same-day revocation (CC1.5). Average offboarding time: 2.3 hours."
+
+---
 
 **Primary Functions:**
 

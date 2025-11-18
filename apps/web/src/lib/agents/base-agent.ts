@@ -224,7 +224,7 @@ export abstract class BaseAgent {
         });
 
         console.log(`[${this.config.agentName}] Structured LLM call succeeded (${result.provider}/${result.model})`);
-        return result.object;
+        return result.object as T;
       } catch (error: any) {
         lastError = error;
         console.warn(`[${this.config.agentName}] Structured LLM call failed (attempt ${attempt}/${this.config.maxRetries})`);

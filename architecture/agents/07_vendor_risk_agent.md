@@ -30,6 +30,29 @@ This agent thinks like a **third-party risk manager who has seen vendor breaches
 **SOC 2 Controls Owned:**
 - CC9.1: Vendor selection - due diligence
 - CC9.2: Vendor management - monitoring
+- P4.1: Privacy - Notice of data sharing with third parties (Supporting)
+- P4.2: Privacy - Third-party data processing agreements (Supporting)
+- P6.7: Privacy - Third-party data handling (Supporting)
+
+## **SOC 2 Controls in Plain English**
+
+**What This Agent Actually Validates:**
+
+| Control | Plain English | Real-World Example | Evidence Required |
+|---------|---------------|-------------------|-------------------|
+| **CC9.1** | **VENDOR SELECTION (DUE DILIGENCE)**<br>Vet vendors before using them? | New vendor "DataSync Pro" → Check SOC 2 report → Security questionnaire → DPA signed → THEN approved for use. No random SaaS subscriptions. | Vendor assessment forms, SOC 2 reports, security questionnaires, approval records |
+| **CC9.2** | **VENDOR MANAGEMENT (MONITORING)**<br>Continuously monitor vendor security? | Every vendor: Annual SOC 2 review + breach monitoring + certificate expiration tracking. Vendor fails review → Remediate or replace. | Annual vendor reviews, SOC 2 report inventory, breach monitoring logs, review schedules |
+| **P4.1** | **PRIVACY - NOTICE OF DATA SHARING** (Supporting)<br>Tell users which vendors see their data? | Privacy policy states "We use AWS, Stripe, SendGrid" with links to their privacy policies. Updated when adding vendors. | Privacy policy with vendor list, policy update logs when vendors change |
+| **P4.2** | **PRIVACY - DPAs WITH VENDORS** (Supporting)<br>Data Processing Agreements signed? | Every vendor that touches customer data has signed DPA specifying: what data, how used, security requirements, deletion obligations. | Signed DPA documents for all vendors, DPA tracking spreadsheet |
+| **P6.7** | **PRIVACY - THIRD-PARTY DATA HANDLING** (Supporting)<br>Vendors handle data properly? | Vendor processes payments → DPA requires PCI DSS + annual attestation. Monitor compliance quarterly. | Vendor compliance attestations, security certifications, monitoring logs |
+
+**Auditor's Question for This Agent:**
+> "How do you ensure third-party vendors maintain adequate security?"
+
+**Our Answer:**
+> "Agent 7 performs security due diligence pre-onboarding (CC9.1 - 100% of 23 vendors assessed), maintains SOC 2 report inventory with annual reviews (CC9.2), validates DPAs for all data processors (P4.2), and monitors for vendor breaches via automated feeds. All 23 critical vendors have current SOC 2 Type II reports."
+
+---
 
 **Primary Functions:**
 

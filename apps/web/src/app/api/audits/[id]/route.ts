@@ -1,7 +1,7 @@
 /**
  * @file api/audits/[id]/route.ts
  * @description API routes for individual audit operations (get, update, delete)
- * @architecture Reference: System Prompt - API Layer with Next.js API Routes
+ * @architecture Reference: Part 6 - Security & Authentication
  *
  * Dependencies:
  * - Clerk (authentication)
@@ -12,10 +12,14 @@
  * - Protected route (Clerk middleware)
  * - Authorization check (user owns company that owns audit)
  * - Input validation with Zod
+ *
+ * Migration History:
+ * - Migrated from Clerk to Supabase Auth on November 17, 2025
+ * - Restored Clerk authentication on November 18, 2025
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { getCurrentDbUser } from "@/lib/auth/server";
 import { prisma } from "@grc/database";
 import { z } from "zod";
 
@@ -85,28 +89,10 @@ export async function GET(
   try {
     const { id } = await params;
 
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
-    }
-
-    // 3. Get audit with authorization check
+    // 2. Get audit with authorization check
     const audit = await getAuthorizedAudit(id, dbUser.id);
 
     if (!audit) {
@@ -116,7 +102,7 @@ export async function GET(
       );
     }
 
-    // 4. Parse trustCriteria JSON if exists
+    // 3. Parse trustCriteria JSON if exists
     const auditWithParsedData = {
       ...audit,
       trustCriteria: audit.trustCriteria
@@ -149,28 +135,10 @@ export async function PATCH(
   try {
     const { id } = await params;
 
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
-    }
-
-    // 3. Verify audit exists and user has access
+    // 2. Verify audit exists and user has access
     const existingAudit = await getAuthorizedAudit(id, dbUser.id);
 
     if (!existingAudit) {
@@ -180,7 +148,7 @@ export async function PATCH(
       );
     }
 
-    // 4. Parse and validate request body
+    // 3. Parse and validate request body
     const body = await request.json();
     const validationResult = UpdateAuditSchema.safeParse(body);
 
@@ -196,7 +164,7 @@ export async function PATCH(
 
     const data = validationResult.data;
 
-    // 5. Build update data
+    // 4. Build update data
     const updateData: any = {};
 
     if (data.framework) updateData.framework = data.framework;
@@ -213,7 +181,7 @@ export async function PATCH(
     if (data.completedAt)
       updateData.completedAt = new Date(data.completedAt);
 
-    // 6. Update audit
+    // 5. Update audit
     const audit = await prisma.audit.update({
       where: { id },
       data: updateData,
@@ -240,7 +208,7 @@ export async function PATCH(
       timestamp: new Date(),
     });
 
-    // 7. Parse trustCriteria for response
+    // 6. Parse trustCriteria for response
     const auditWithParsedData = {
       ...audit,
       trustCriteria: audit.trustCriteria
@@ -277,28 +245,10 @@ export async function DELETE(
   try {
     const { id } = await params;
 
-    // 1. Check authentication
-    const user = await currentUser();
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    // 1. Get authenticated user from database
+    const dbUser = await getCurrentDbUser();
 
-    // 2. Get user from database
-    const dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-    });
-
-    if (!dbUser) {
-      return NextResponse.json(
-        { error: "User not found in database" },
-        { status: 404 }
-      );
-    }
-
-    // 3. Verify audit exists and user has access
+    // 2. Verify audit exists and user has access
     const existingAudit = await getAuthorizedAudit(id, dbUser.id);
 
     if (!existingAudit) {
@@ -308,7 +258,7 @@ export async function DELETE(
       );
     }
 
-    // 4. Delete audit (CASCADE will delete related evidence)
+    // 3. Delete audit (CASCADE will delete related evidence)
     await prisma.audit.delete({
       where: { id },
     });

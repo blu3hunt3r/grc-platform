@@ -36,13 +36,14 @@ Our architecture uses **five specialized data stores**, each optimized for its s
 │                     DATA ARCHITECTURE                            │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────┐      │
-│  │  POSTGRESQL (Neon) - Primary Database                │      │
+│  │  POSTGRESQL (Supabase) - Primary Database           │      │
 │  │  ─────────────────────────────────────────           │      │
 │  │  Purpose: All structured data                        │      │
 │  │  Tables: 30+ tables (users, organizations, controls, │      │
 │  │          evidence, approvals, agent executions, etc.)│      │
 │  │  Why: ACID compliance, relationships, transactions   │      │
 │  │  Access: Prisma ORM (type-safe queries)              │      │
+│  │  Migration: From Neon on November 17, 2025          │      │
 │  └──────────────────────────────────────────────────────┘      │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────┐      │
@@ -66,12 +67,14 @@ Our architecture uses **five specialized data stores**, each optimized for its s
 │  └──────────────────────────────────────────────────────┘      │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────┐      │
-│  │  S3/R2 - Object Storage (Evidence Files)             │      │
+│  │  SUPABASE STORAGE - Object Storage (Evidence Files) │      │
 │  │  ─────────────────────────────────────────           │      │
 │  │  Purpose: Store binary evidence (screenshots, PDFs)  │      │
+│  │  Buckets: evidence-files, policy-documents, reports  │      │
 │  │  Organization: /org-id/evidence/control-id/file.pdf  │      │
-│  │  Why: Cost-effective storage, CDN delivery           │      │
+│  │  Why: Integrated with DB, RLS policies, CDN delivery │      │
 │  │  Access: Pre-signed URLs (security + performance)    │      │
+│  │  Migration: From AWS S3 on November 17, 2025        │      │
 │  └──────────────────────────────────────────────────────┘      │
 │                                                                  │
 │  ┌──────────────────────────────────────────────────────┐      │
@@ -96,7 +99,7 @@ Example: User approves vendor assessment
 2. API validates user has permission
 3. Database: Update approval status
 4. Redis: Invalidate vendor cache
-5. WebSocket: Broadcast approval to all connected clients
+5. Supabase Realtime: Broadcast approval to all connected clients
 6. Agent: Trigger next workflow step (e.g., add to registry)
 ```
 
@@ -200,7 +203,7 @@ Fields:
 │   ├─ vendors: ["view", "assess", "approve"]
 │   ├─ agents: ["view", "configure"]
 │   └─ settings: ["view", "edit"]
-├─ clerk_user_id (String, unique): Link to Clerk auth provider
+├─ auth_user_id (String, unique): Link to Supabase Auth (migrated from Clerk on Nov 17, 2025)
 ├─ last_active_at (DateTime): For session tracking
 ├─ preferences (JSON): User-specific UI preferences
 │   ├─ dashboard_layout: "compact" | "detailed"
@@ -892,7 +895,7 @@ We use a **three-tier API architecture**:
 │                    TIER 1: tRPC (Internal)                       │
 │  ──────────────────────────────────────────────────────          │
 │  Purpose: Type-safe API for Next.js frontend                    │
-│  Authentication: Clerk session-based                             │
+│  Authentication: Supabase Auth session-based                     │
 │  Transport: HTTP POST to /api/trpc                               │
 │  Validation: Zod schemas                                         │
 │  Performance: Response caching with Redis                        │
@@ -921,20 +924,19 @@ We use a **three-tier API architecture**:
 └─────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────┐
-│                 TIER 3: WebSocket (Real-Time)                    │
+│              TIER 3: Supabase Realtime (Real-Time)               │
 │  ──────────────────────────────────────────────────────          │
 │  Purpose: Live updates to connected clients                      │
-│  Authentication: Clerk session token in handshake                │
-│  Transport: WebSocket over WSS                                   │
-│  Events: agent.started, approval.updated, evidence.collected     │
-│  Fallback: Server-Sent Events (SSE) for older browsers          │
+│  Authentication: Supabase Auth session token in handshake        │
+│  Transport: WebSocket over WSS (PostgreSQL replication)          │
+│  Events: Database changes broadcast to subscribed clients        │
+│  Benefits: RLS enforced, automatic reconnection                  │
 │                                                                  │
 │  Example Events:                                                 │
-│  ├─ agent.execution.started                                     │
-│  ├─ agent.execution.progress ({ progress: 45 })                │
-│  ├─ agent.execution.completed                                   │
-│  ├─ approval.created                                            │
-│  └─ dashboard.metrics.updated                                   │
+│  ├─ agent_executions INSERT/UPDATE                              │
+│  ├─ approvals INSERT/UPDATE                                     │
+│  ├─ evidence INSERT/UPDATE                                      │
+│  └─ Real-time progress tracking for all tables                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
