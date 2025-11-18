@@ -49,14 +49,12 @@ import { prisma, UserRepository, CompanyRepository } from '@grc/database';
  * Clerk webhook signing secret
  * Get this from Clerk Dashboard → Webhooks → Signing Secret
  *
- * IMPORTANT: Add this to .env.local:
+ * IMPORTANT: Add this to .env.local and Vercel:
  * CLERK_WEBHOOK_SECRET=whsec_xxxxxxxxxxxxx
+ *
+ * Note: This is validated at runtime (in POST handler) to allow builds
+ * to succeed even if the secret is not set during build time.
  */
-const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET!;
-
-if (!process.env.CLERK_WEBHOOK_SECRET) {
-  throw new Error('CLERK_WEBHOOK_SECRET is not set in environment variables');
-}
 
 // ============================================================================
 // WEBHOOK HANDLER
@@ -79,6 +77,20 @@ if (!process.env.CLERK_WEBHOOK_SECRET) {
  */
 export async function POST(req: Request) {
   try {
+    // ============================================================================
+    // STEP 0: Validate Webhook Secret (Runtime Check)
+    // ============================================================================
+
+    const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+
+    if (!WEBHOOK_SECRET) {
+      console.error('[Clerk Webhook] CLERK_WEBHOOK_SECRET not set in environment variables');
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
+
     // ============================================================================
     // STEP 1: Verify Webhook Signature
     // ============================================================================

@@ -1,27 +1,40 @@
 # Part 3: System Architecture
 
 **Document:** 03_system_architecture.md
-**Version:** 3.0 - Architectural Thinking (No Code)
-**Last Updated:** November 16, 2025
+**Version:** 4.0 - Framework-Agnostic Multi-Layer Architecture
+**Last Updated:** November 18, 2025
 **Status:** Production-Ready Architecture
-**Philosophy:** Enterprise-Grade Multi-Agent Orchestration for Compliance Automation
+**Philosophy:** Enterprise-Grade Multi-Agent Orchestration with Framework-Agnostic Design
+
+**Key Updates in v4.0:**
+- Added Layer 0: Framework-Agnostic Foundation (configuration-driven compliance)
+- Enhanced orchestration layer with detailed Temporal + LangGraph + CrewAI integration
+- Framework-aware agent execution patterns
+- Cross-framework control mapping architecture
+- Multi-framework evidence reuse strategies
 
 ---
 
 ## 📋 **TABLE OF CONTENTS**
 
 1. [Architecture Overview](#1-architecture-overview)
-2. [Multi-Agent System Design](#2-multi-agent-system)
-3. [Vision-Based Evidence Collection](#3-vision-evidence)
-4. [Orchestration Philosophy](#4-orchestration)
-5. [Database Design Principles](#5-database)
-6. [API & Integration Strategy](#6-api-integration)
-7. [Real-Time Architecture](#7-realtime)
-8. [Agent Communication Patterns](#8-agent-communication)
-9. [Monorepo Organization](#9-monorepo)
-10. [Security Architecture](#10-security)
-11. [Scalability & Performance](#11-scalability)
-12. [End-to-End Flows](#12-flows)
+2. **[Layer 0: Framework-Agnostic Foundation](#2-framework-foundation)** ⭐ NEW
+   - 2.1 The Framework-as-Data Philosophy
+   - 2.2 Framework Registry & Control Catalog
+   - 2.3 Cross-Framework Control Mapping
+   - 2.4 Framework-Aware Orchestration
+   - 2.5 Evidence Reuse Across Frameworks
+3. [Multi-Agent System Design](#3-multi-agent-system)
+4. [Vision-Based Evidence Collection](#4-vision-evidence)
+5. [Orchestration Philosophy](#5-orchestration)
+6. [Database Design Principles](#6-database)
+7. [API & Integration Strategy](#7-api-integration)
+8. [Real-Time Architecture](#8-realtime)
+9. [Agent Communication Patterns](#9-agent-communication)
+10. [Monorepo Organization](#10-monorepo)
+11. [Security Architecture](#11-security)
+12. [Scalability & Performance](#12-scalability)
+13. [End-to-End Flows](#13-flows)
 
 ---
 
@@ -455,9 +468,681 @@ This transparency builds trust and demonstrates the platform's capability in rea
 
 ---
 
-## **2. MULTI-AGENT SYSTEM DESIGN** {#2-multi-agent-system}
+## **2. LAYER 0: FRAMEWORK-AGNOSTIC FOUNDATION** {#2-framework-foundation}
 
-### **2.1 Agent Architecture Philosophy**
+### **2.1 The Framework-as-Data Philosophy**
+
+**The Core Architectural Insight:**
+
+Most GRC platforms hard-code compliance frameworks into their application logic. This creates several problems:
+
+1. **Rigid Architecture**: Adding a new framework (ISO 27001, HIPAA, PCI-DSS) requires code changes
+2. **Duplication**: Similar controls across frameworks lead to duplicated evidence collection
+3. **Maintenance Burden**: Framework updates require engineering effort
+4. **Vendor Lock-in**: Customers can't customize frameworks for their specific needs
+
+**Our Solution: Frameworks as Configuration, Not Code**
+
+We treat compliance frameworks as **data** stored in a registry, not as application code. This means:
+
+```
+Traditional Approach:
+├─ SOC2Agent.ts         (hard-coded SOC 2 logic)
+├─ ISO27001Agent.ts     (hard-coded ISO logic)
+└─ HIPAAAgent.ts        (hard-coded HIPAA logic)
+❌ Problem: Every framework requires new code
+
+Our Approach:
+├─ FrameworkRegistry/
+│   ├─ soc2-type-ii.yaml      (configuration file)
+│   ├─ iso-27001-2022.yaml    (configuration file)
+│   └─ hipaa-security.yaml    (configuration file)
+└─ FrameworkExpertAgent.ts    (single agent reads ANY framework config)
+✅ Benefit: New framework = new YAML file, zero code changes
+```
+
+**What This Enables:**
+
+1. **Multi-Framework Support**: Companies pursuing SOC 2 + ISO 27001 + HIPAA use the same platform
+2. **Evidence Reuse**: One piece of evidence maps to multiple frameworks' controls
+3. **Custom Frameworks**: Enterprise customers can define custom control sets
+4. **Framework Evolution**: When SOC 2 TSC updates, we update YAML, not code
+5. **Competitive Advantage**: Can support niche frameworks competitors ignore
+
+---
+
+### **2.2 Framework Registry & Control Catalog**
+
+**The Framework Registry Schema:**
+
+Each framework is defined as a structured configuration containing:
+
+**Framework Metadata:**
+```typescript
+interface ComplianceFramework {
+  id: string;                    // "soc2-type-ii"
+  name: string;                  // "SOC 2 Type II"
+  version: string;               // "2017-trust-services-criteria"
+  issuer: string;                // "AICPA"
+  description: string;
+
+  // What trust criteria this framework supports
+  trustCriteria: TrustCriterion[];  // ["Security", "Availability", "Confidentiality"]
+
+  // The audit phases
+  phases: AuditPhase[];
+
+  // All controls in this framework
+  controls: FrameworkControl[];
+
+  // Cross-references to other frameworks
+  mappings: FrameworkMapping[];
+}
+```
+
+**Trust Criteria Definition:**
+
+```typescript
+interface TrustCriterion {
+  id: string;                    // "CC6"
+  name: string;                  // "Logical and Physical Access Controls"
+  category: "Common Criteria" | "Availability" | "Confidentiality" | etc;
+  description: string;
+}
+```
+
+**Control Definition:**
+
+```typescript
+interface FrameworkControl {
+  id: string;                          // "CC6.1"
+  criterionId: string;                 // "CC6"
+  title: string;                       // "MFA for Network Access"
+  description: string;                 // Full control text
+
+  // Which agent owns this control
+  primaryAgent: number;                // 4 = Access Control Agent
+  supportingAgents: number[];          // [2] = Discovery Agent helps
+
+  // What evidence types prove this control
+  requiredEvidenceTypes: EvidenceType[];
+
+  // How frequently evidence needs collection
+  collectionFrequency: "daily" | "weekly" | "monthly" | "quarterly" | "annually" | "once";
+
+  // How critical is this control
+  criticalityLevel: "critical" | "high" | "medium" | "low";
+
+  // Manual vs automated evidence collection
+  automationLevel: "fully-automated" | "mostly-automated" | "requires-human-review" | "manual-only";
+
+  // Point-in-time vs ongoing
+  controlType: "design" | "implementation" | "operating-effectiveness";
+
+  // For operating effectiveness, what period of evidence is needed?
+  evidencePeriod?: {
+    months: number;              // 3 for quarterly, 12 for annually
+    minimumSamples: number;      // How many evidence instances required
+  };
+}
+```
+
+**Evidence Type Definition:**
+
+```typescript
+interface EvidenceType {
+  id: string;                          // "mfa-status-screenshot"
+  name: string;                        // "MFA Enrollment Status"
+  format: "screenshot" | "api-response" | "document" | "log-file" | "config-file";
+
+  // How to collect this evidence
+  collectionStrategy: "api-primary-vision-fallback" | "vision-only" | "manual-upload" | "generated";
+
+  // What tools can collect this
+  supportedTools: string[];            // ["okta-api", "playwright-vision"]
+
+  // How to validate this evidence
+  validationRules: ValidationRule[];
+}
+```
+
+**Example: SOC 2 Control CC6.1**
+
+```yaml
+# File: packages/database/framework-registry/soc2-type-ii.yaml
+
+id: "soc2-type-ii"
+name: "SOC 2 Type II"
+version: "2017-trust-services-criteria"
+issuer: "AICPA"
+
+trustCriteria:
+  - id: "CC6"
+    name: "Logical and Physical Access Controls"
+    category: "Common Criteria"
+    description: "The entity implements logical access security software..."
+
+controls:
+  - id: "CC6.1"
+    criterionId: "CC6"
+    title: "Logical and Physical Access Controls - Authentication"
+    description: |
+      The entity implements controls to prevent or detect and act upon the
+      introduction of unauthorized or malicious software to meet the entity's
+      objectives. Specifically, the entity requires users to authenticate
+      via multi-factor authentication (MFA) to gain network access.
+
+    primaryAgent: 4                      # Access Control Agent
+    supportingAgents: [2]                # Discovery Agent
+
+    requiredEvidenceTypes:
+      - id: "mfa-enrollment-status"
+        name: "MFA Enrollment Status Report"
+        format: "screenshot"
+        collectionStrategy: "api-primary-vision-fallback"
+        supportedTools: ["okta-api", "google-workspace-api", "azure-ad-api", "playwright-vision"]
+        validationRules:
+          - type: "percentage-check"
+            field: "users_with_mfa_enabled"
+            operator: ">="
+            value: 100
+            unit: "percent"
+
+      - id: "mfa-policy-config"
+        name: "MFA Policy Configuration"
+        format: "api-response"
+        collectionStrategy: "api-primary-vision-fallback"
+        validationRules:
+          - type: "field-exists"
+            field: "mfa_required"
+            expectedValue: true
+
+    collectionFrequency: "daily"
+    criticalityLevel: "critical"
+    automationLevel: "fully-automated"
+    controlType: "operating-effectiveness"
+    evidencePeriod:
+      months: 3                          # For Type II, need 3 months of evidence
+      minimumSamples: 12                 # 12 weekly samples minimum
+```
+
+**The Control Catalog Database:**
+
+We store this in PostgreSQL for efficient querying:
+
+```sql
+-- Framework definitions
+CREATE TABLE frameworks (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  version TEXT NOT NULL,
+  issuer TEXT,
+  config JSONB NOT NULL,           -- Full YAML as JSON
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Individual controls (extracted for efficient queries)
+CREATE TABLE framework_controls (
+  id TEXT PRIMARY KEY,               -- "CC6.1"
+  framework_id TEXT REFERENCES frameworks(id),
+  criterion_id TEXT,
+  title TEXT NOT NULL,
+  description TEXT,
+  primary_agent_id INTEGER,
+  automation_level TEXT,
+  criticality_level TEXT,
+  control_type TEXT,
+  collection_frequency TEXT,
+  config JSONB NOT NULL,             -- Full control definition
+
+  -- Indexes for fast lookups
+  INDEX idx_framework_controls_agent (primary_agent_id),
+  INDEX idx_framework_controls_frequency (collection_frequency),
+  INDEX idx_framework_controls_criticality (criticality_level)
+);
+
+-- Evidence types catalog
+CREATE TABLE evidence_types (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  format TEXT,
+  collection_strategy TEXT,
+  validation_rules JSONB,
+  supported_tools TEXT[]
+);
+
+-- Cross-framework control mappings
+CREATE TABLE control_mappings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  source_framework_id TEXT,
+  source_control_id TEXT,
+  target_framework_id TEXT,
+  target_control_id TEXT,
+  mapping_type TEXT,                 -- "equivalent", "partial", "related"
+  confidence_score DECIMAL(3,2),     -- 0.00 to 1.00
+  notes TEXT,
+
+  UNIQUE(source_framework_id, source_control_id, target_framework_id, target_control_id)
+);
+```
+
+---
+
+### **2.3 Cross-Framework Control Mapping**
+
+**The Business Problem:**
+
+Companies pursuing multiple certifications (e.g., SOC 2 + ISO 27001) would traditionally:
+1. Collect MFA evidence for SOC 2 CC6.1
+2. Collect the SAME MFA evidence again for ISO 27001 A.9.2.1
+3. Store duplicate evidence, waste agent time
+
+**Our Solution: Intelligent Control Mapping**
+
+We maintain a **cross-framework control mapping** that identifies equivalent or related controls across frameworks:
+
+**Mapping Example: MFA Controls**
+
+```typescript
+const mfaControlMapping = {
+  soc2: {
+    controlId: "CC6.1",
+    requirement: "Multi-factor authentication for network access"
+  },
+  iso27001: {
+    controlId: "A.9.2.1",
+    requirement: "User registration and de-registration"
+  },
+  hipaa: {
+    controlId: "164.312(a)(2)(i)",
+    requirement: "Unique user identification"
+  },
+  pcidss: {
+    controlId: "8.3",
+    requirement: "Multi-factor authentication for remote access"
+  },
+
+  // The mapping relationships
+  mappingType: "equivalent",           // All these controls require same evidence
+  confidence: 0.95,                    // 95% confident same evidence satisfies all
+
+  // Evidence collected ONCE satisfies ALL frameworks
+  sharedEvidenceTypes: [
+    "mfa-enrollment-status",
+    "mfa-policy-config"
+  ],
+
+  // Framework-specific evidence (if any)
+  frameworkSpecificEvidence: {
+    pcidss: ["remote-access-logs"]     // PCI-DSS also needs remote access logs
+  }
+};
+```
+
+**The Mapping Table:**
+
+```sql
+-- Example mappings
+INSERT INTO control_mappings (
+  source_framework_id, source_control_id,
+  target_framework_id, target_control_id,
+  mapping_type, confidence_score, notes
+) VALUES
+-- MFA controls across frameworks
+('soc2-type-ii', 'CC6.1', 'iso-27001-2022', 'A.9.2.1', 'equivalent', 0.95,
+ 'Both require MFA for authentication. Same evidence satisfies both.'),
+
+('soc2-type-ii', 'CC6.1', 'hipaa-security', '164.312(a)(2)(i)', 'partial', 0.75,
+ 'HIPAA requires unique user ID, MFA evidence partially satisfies but need additional proof of uniqueness'),
+
+('soc2-type-ii', 'CC6.1', 'pci-dss-v4', '8.3', 'equivalent', 0.90,
+ 'PCI-DSS 8.3 specifically requires MFA for remote access. SOC 2 MFA evidence applies but may need to filter for remote users'),
+
+-- Encryption controls across frameworks
+('soc2-type-ii', 'CC6.7', 'iso-27001-2022', 'A.10.1.1', 'equivalent', 0.95,
+ 'Both require encryption at rest. Same AWS KMS/S3 encryption evidence satisfies both'),
+
+('soc2-type-ii', 'CC6.7', 'hipaa-security', '164.312(a)(2)(iv)', 'equivalent', 1.00,
+ 'HIPAA encryption requirement directly aligns with SOC 2'),
+
+-- ... hundreds more mappings
+```
+
+**How This Works in Practice:**
+
+**Scenario**: Company pursuing SOC 2 + ISO 27001 simultaneously
+
+**Step 1: Agent Receives Task**
+```typescript
+// Access Control Agent receives instruction
+const task = {
+  action: "collect_mfa_evidence",
+  frameworks: ["soc2-type-ii", "iso-27001-2022"],
+  controls: {
+    "soc2-type-ii": ["CC6.1"],
+    "iso-27001-2022": ["A.9.2.1"]
+  }
+};
+```
+
+**Step 2: Agent Queries Control Mappings**
+```typescript
+const mappings = await db.query(`
+  SELECT * FROM control_mappings
+  WHERE
+    (source_framework_id = 'soc2-type-ii' AND source_control_id = 'CC6.1')
+    OR
+    (target_framework_id = 'iso-27001-2022' AND target_control_id = 'A.9.2.1')
+`);
+
+// Discovers: These controls are EQUIVALENT (mapping_type = 'equivalent', confidence = 0.95)
+```
+
+**Step 3: Agent Collects Evidence ONCE**
+```typescript
+const evidence = await collectMFAEvidence({
+  systems: ["okta"],
+  evidenceTypes: ["mfa-enrollment-status", "mfa-policy-config"]
+});
+
+// Evidence collected: 1 screenshot, 1 API response
+```
+
+**Step 4: Agent Tags Evidence for Multiple Frameworks**
+```typescript
+await db.insert('evidence', {
+  id: uuid(),
+  type: 'mfa-enrollment-status',
+  file_url: 's3://evidence/mfa-screenshot-2025-11-18.png',
+  collected_at: new Date(),
+
+  // KEY: This evidence satisfies MULTIPLE controls across MULTIPLE frameworks
+  applicable_controls: [
+    {
+      framework_id: 'soc2-type-ii',
+      control_id: 'CC6.1',
+      confidence: 0.95
+    },
+    {
+      framework_id: 'iso-27001-2022',
+      control_id: 'A.9.2.1',
+      confidence: 0.95
+    }
+  ]
+});
+```
+
+**Result:**
+- 1 evidence collection satisfies 2 frameworks
+- 50% reduction in agent work
+- 50% reduction in evidence storage
+- Customers see faster time to compliance
+
+---
+
+### **2.4 Framework-Aware Orchestration**
+
+**The Orchestration Challenge:**
+
+Different frameworks have different audit workflows:
+
+- **SOC 2 Type II**: 3-month evidence collection period, continuous monitoring
+- **ISO 27001**: Point-in-time assessment, annual recertification
+- **HIPAA**: Ongoing compliance, no fixed audit schedule
+- **PCI-DSS**: Quarterly scans, annual assessments
+
+Our orchestration layer must adapt to each framework's requirements while reusing agents.
+
+**The Framework Configuration Drives Orchestration:**
+
+Each framework YAML defines its audit phases and orchestration requirements:
+
+```yaml
+# soc2-type-ii.yaml
+phases:
+  - id: "readiness-assessment"
+    name: "Readiness Assessment"
+    duration_weeks: 2
+    orchestration_layer: "temporal"          # Use Temporal for durable execution
+    workflow:
+      type: "sequential"
+      activities:
+        - name: "discovery"
+          agent: "discovery-agent"
+          orchestration: "crewai"            # Use CrewAI for parallel scanners
+          timeout_hours: 48
+
+        - name: "gap-assessment"
+          agent: "framework-expert-agent"
+          orchestration: "langgraph"         # Use LangGraph for decision tree
+          requires_approval: true
+          approval_timeout_days: 14
+
+  - id: "implementation"
+    name: "Control Implementation"
+    duration_months: 3
+    orchestration_layer: "temporal"
+    workflow:
+      type: "parallel"                       # All control agents run in parallel
+      activities:
+        - name: "access-controls"
+          agent: "access-control-agent"
+          controls: ["CC6.1", "CC6.2", "CC6.3", "CC6.6", "CC6.7"]
+
+        - name: "infrastructure-security"
+          agent: "infrastructure-security-agent"
+          controls: ["CC6.8", "CC7.1", "CC7.2", "CC7.3", "CC7.4", "CC7.5"]
+
+  - id: "evidence-collection"
+    name: "Evidence Collection Period"
+    duration_months: 3                       # Type II requires 3 months
+    orchestration_layer: "temporal"
+    workflow:
+      type: "continuous"                     # Child workflow runs continuously
+      schedule:
+        daily: ["CC6.1", "CC7.2"]            # These controls checked daily
+        weekly: ["CC6.2", "CC8.1"]           # These checked weekly
+        monthly: ["CC6.7", "CC9.1"]          # These checked monthly
+
+  - id: "audit-execution"
+    name: "External Audit"
+    duration_weeks: 3
+    orchestration_layer: "temporal"
+    workflow:
+      type: "event-driven"                   # Respond to auditor questions
+      wait_for_signals: ["auditor_question", "audit_complete"]
+```
+
+**Framework-Aware Temporal Workflow:**
+
+```typescript
+@workflow.defn
+class FrameworkAuditWorkflow {
+  @workflow.run
+  async run(input: { companyId: string; frameworkId: string }) {
+    // Step 1: Load framework configuration
+    const framework = await workflow.executeActivity(
+      loadFrameworkConfig,
+      input.frameworkId
+    );
+
+    // Step 2: Execute each phase defined in framework config
+    for (const phase of framework.phases) {
+      switch (phase.orchestration_layer) {
+        case "temporal":
+          if (phase.workflow.type === "sequential") {
+            await this.executeSequentialPhase(phase);
+          } else if (phase.workflow.type === "parallel") {
+            await this.executeParallelPhase(phase);
+          } else if (phase.workflow.type === "continuous") {
+            await this.executeContinuousPhase(phase, input.companyId);
+          } else if (phase.workflow.type === "event-driven") {
+            await this.executeEventDrivenPhase(phase);
+          }
+          break;
+      }
+    }
+
+    return { status: "complete", framework: framework.id };
+  }
+
+  async executeSequentialPhase(phase: AuditPhase) {
+    for (const activity of phase.workflow.activities) {
+      // Each activity specifies which orchestration to use
+      if (activity.orchestration === "crewai") {
+        // Use CrewAI for multi-agent coordination
+        await workflow.executeActivity(
+          runCrewAIActivity,
+          { agentName: activity.agent, phase: phase.id }
+        );
+      } else if (activity.orchestration === "langgraph") {
+        // Use LangGraph for state machine
+        await workflow.executeActivity(
+          runLangGraphActivity,
+          { agentName: activity.agent, phase: phase.id }
+        );
+      } else {
+        // Direct agent invocation
+        await workflow.executeActivity(
+          runSingleAgent,
+          { agentName: activity.agent, phase: phase.id }
+        );
+      }
+
+      // If this activity requires approval, wait for signal
+      if (activity.requires_approval) {
+        await workflow.wait Condition(
+          () => this.approved,
+          timedelta(days: activity.approval_timeout_days)
+        );
+      }
+    }
+  }
+}
+```
+
+**The Result:**
+
+- Same Temporal workflow handles SOC 2, ISO 27001, HIPAA, etc.
+- Framework YAML configuration drives the workflow behavior
+- Adding new framework = new YAML, zero code changes
+- Framework updates = YAML updates, no deployment needed
+
+---
+
+### **2.5 Evidence Reuse Across Frameworks**
+
+**The Evidence Reuse Strategy:**
+
+When a company pursues multiple frameworks, we maximize evidence reuse through:
+
+**1. Intelligent Evidence Collection**
+
+Before collecting evidence, agents check:
+```typescript
+// Check if we already have recent evidence that satisfies this control
+const existingEvidence = await db.query(`
+  SELECT e.* FROM evidence e
+  WHERE
+    e.company_id = $1
+    AND e.evidence_type = $2
+    AND e.collected_at > NOW() - INTERVAL '7 days'        -- Evidence is recent
+    AND e.validation_status = 'approved'                  -- Evidence is validated
+    AND EXISTS (
+      SELECT 1 FROM evidence_control_mappings ecm
+      WHERE ecm.evidence_id = e.id
+      AND ecm.framework_id IN ($3, $4, ...)                -- Satisfies target frameworks
+    )
+`, [companyId, evidenceType, ...targetFrameworks]);
+
+if (existingEvidence.length > 0) {
+  // Reuse existing evidence!
+  logger.info('Reusing evidence from previous collection');
+  return existingEvidence[0];
+} else {
+  // Collect new evidence
+  const newEvidence = await collectEvidence();
+
+  // Tag it for ALL applicable frameworks
+  await tagEvidenceForFrameworks(newEvidence, targetFrameworks);
+
+  return newEvidence;
+}
+```
+
+**2. Cross-Framework Evidence Dashboard**
+
+Users see one unified evidence library with framework tags:
+
+```
+Evidence: MFA Enrollment Status Screenshot
+├─ File: mfa-status-2025-11-18.png
+├─ Collected: Nov 18, 2025 10:30 AM
+├─ Collected By: Access Control Agent
+├─ Validation: ✅ Approved
+└─ Satisfies:
+    ├─ ✅ SOC 2 CC6.1 (Multi-factor authentication)
+    ├─ ✅ ISO 27001 A.9.2.1 (User registration)
+    └─ ⚠️  HIPAA 164.312(a)(2)(i) (Partial - need additional uniqueness proof)
+```
+
+**3. Gap Analysis Across Frameworks**
+
+When pursuing multiple frameworks, the Framework Expert Agent identifies:
+- **Shared controls**: Controls that overlap (collect evidence once)
+- **Unique controls**: Framework-specific controls (need separate evidence)
+- **Partial overlaps**: Controls that partially overlap (reuse some evidence, collect additional)
+
+**Example Gap Analysis Output:**
+
+```
+Company: Acme SaaS Inc.
+Target Frameworks: SOC 2 Type II + ISO 27001:2022
+
+Control Analysis:
+├─ Shared Controls (evidence collected once): 42 controls
+│   ├─ Access controls (MFA, password policy, reviews)
+│   ├─ Encryption (at rest, in transit)
+│   ├─ Logging & monitoring
+│   └─ Incident response
+│
+├─ SOC 2 Specific Controls: 22 controls
+│   ├─ Trust Services Criteria specific items
+│   └─ Availability & Processing Integrity (if applicable)
+│
+├─ ISO 27001 Specific Controls: 51 controls
+│   ├─ Risk assessment methodology
+│   ├─ Asset management
+│   └─ Supplier relationships
+│
+└─ Partial Overlap Controls: 15 controls
+    ├─ Business continuity (both require, but different depth)
+    ├─ Physical security (both require, but different scope)
+    └─ Cryptography (both require, but different standards)
+
+Evidence Reuse Summary:
+├─ Total Evidence Collections Needed (if separate): 150 pieces
+├─ With Intelligent Reuse: 98 pieces
+└─ Efficiency Gain: 35% reduction in agent work
+```
+
+**The Competitive Advantage:**
+
+This framework-agnostic architecture enables:
+
+1. **Multi-Framework Customers**: Serve customers pursuing 2-3 certifications simultaneously
+2. **Faster Time to Compliance**: Evidence reuse speeds up each additional framework
+3. **Lower Cost**: Less agent work = lower operational costs = better margins
+4. **Niche Frameworks**: Can quickly support frameworks competitors ignore (FedRAMP, StateRAMP, TISAX, etc.)
+5. **Custom Frameworks**: Enterprise customers can define their own control sets
+
+**No competitor has this architecture.** Vanta, Drata, and Delve all hard-code frameworks into their applications.
+
+---
+
+## **3. MULTI-AGENT SYSTEM DESIGN** {#3-multi-agent-system}
+
+### **3.1 Agent Architecture Philosophy**
 
 **What Makes an Agent vs. a Function:**
 
